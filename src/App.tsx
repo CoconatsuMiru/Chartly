@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { STAGES, type Stage } from '@/domain'
+import { STAGES, type ColumnMeta, type Stage } from '@/domain'
 import { getDataWorker } from '@/workers/workerClient'
 import type { LoadResult } from '@/workers/protocol'
 
@@ -10,6 +10,29 @@ const BADGE: Record<string, string> = {
   boolean: 'bg-paper text-ink',
   identifier: 'bg-paper text-muted',
   text: 'bg-paper text-muted',
+}
+
+const fmt = (n: number) =>
+  n.toLocaleString('en-US', { maximumFractionDigits: 2 })
+
+function summary(result: LoadResult, col: ColumnMeta): string {
+  const p = result.profile.columns.find((c) => c.columnId === col.id)
+  if (!p) return ''
+  if (p.numeric) {
+    const n = p.numeric
+    return `min ${fmt(n.min)} · mean ${fmt(n.mean)} · median ${fmt(n.median)} · max ${fmt(n.max)} · outliers ${n.outlierCount}`
+  }
+  if (p.date) {
+    const d = p.date
+    return `${new Date(d.min).toISOString().slice(0, 10)} → ${new Date(d.max).toISOString().slice(0, 10)} · ${d.granularity}`
+  }
+  if (p.categorical) {
+    return p.categorical.top
+      .slice(0, 3)
+      .map((t) => `${t.value} ${Math.round(t.share * 100)}%`)
+      .join(' · ')
+  }
+  return ''
 }
 
 export default function App() {
@@ -31,6 +54,8 @@ export default function App() {
       setBusy(false)
     }
   }
+
+  const nameOf = (id: string) => result?.columns.find((c) => c.id === id)?.name ?? id
 
   return (
     <div className="flex h-full">
@@ -59,9 +84,9 @@ export default function App() {
 
       <main className="flex-1 space-y-6 overflow-auto p-8">
         <section className="rounded-[var(--radius-card)] bg-surface p-8 shadow-[var(--shadow-card)]">
-          <h2 className="font-serif text-3xl">Parsing check</h2>
+          <h2 className="font-serif text-3xl">Analysis check</h2>
           <p className="mt-2 text-muted">
-            Pick an .xlsx, .xls, .csv or .tsv file. It is parsed in a Web Worker.
+            Pick an .xlsx, .xls, .csv or .tsv file. It is parsed and profiled in a Web Worker.
           </p>
           <input
             type="file"
@@ -69,7 +94,7 @@ export default function App() {
             onChange={(e) => onFile(e.target.files?.[0])}
             className="mt-4 block text-sm"
           />
-          {busy && <p className="mt-4 text-muted">Parsing…</p>}
+          {busy && <p className="mt-4 text-muted">Analysing…</p>}
           {error && (
             <p role="alert" className="mt-4 text-danger">
               {error}
@@ -77,12 +102,12 @@ export default function App() {
           )}
 
           {result && (
-            <div className="mt-6 space-y-5">
+            <div className="mt-6 space-y-6">
               <p className="font-mono text-sm">
                 {result.source.format.toUpperCase()} · {result.rowCount} rows ·{' '}
-                {result.columns.length} cols · {result.parseMs} ms
+                {result.columns.length} cols · {result.parseMs} ms · duplicate rows:{' '}
+                {result.profile.duplicateRowCount}
                 {result.source.sheetName && ` · sheet: ${result.source.sheetName}`}
-                {result.sheets.length > 1 && ` (of ${result.sheets.length})`}
               </p>
 
               {result.source.parseWarnings.length > 0 && (
@@ -122,6 +147,39 @@ export default function App() {
                   </tbody>
                 </table>
               </div>
+
+              <div>
+                <h3 className="font-serif text-xl">Column profile</h3>
+                <ul className="mt-2 space-y-2 text-sm">
+                  {result.columns.map((c) => {
+                    const p = result.profile.columns.find((x) => x.columnId === c.id)
+                    return (
+                      <li key={c.id} className="rounded-lg border border-line p-3">
+                        <span className="font-medium">{c.name}</span>
+                        <span className="ml-2 font-mono text-xs text-muted">
+                          {p?.count} filled · {Math.round((p?.missingRate ?? 0) * 100)}% missing ·{' '}
+                          {p?.distinct} distinct
+                          {p && p.qualityFlags.length > 0 && ` · ⚑ ${p.qualityFlags.join(', ')}`}
+                        </span>
+                        <div className="mt-1 font-mono text-xs">{summary(result, c)}</div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
+
+              {result.profile.correlations.length > 0 && (
+                <div>
+                  <h3 className="font-serif text-xl">Strongest correlations</h3>
+                  <ul className="mt-2 space-y-1 font-mono text-xs">
+                    {result.profile.correlations.slice(0, 5).map((c, i) => (
+                      <li key={i}>
+                        {nameOf(c.a)} ↔ {nameOf(c.b)}: r = {c.r.toFixed(3)} (n = {c.n})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </section>

@@ -1,4 +1,4 @@
-import type { ColumnMeta, SourceInfo } from '@/domain'
+import type { ColumnMeta, DatasetProfile, SourceInfo } from '@/domain'
 
 export interface LoadOptions {
   sheet?: string
@@ -8,6 +8,7 @@ export interface LoadResult {
   datasetId: string
   source: SourceInfo
   columns: ColumnMeta[]
+  profile: DatasetProfile
   rowCount: number
   sheets: string[]
   preview: string[][]

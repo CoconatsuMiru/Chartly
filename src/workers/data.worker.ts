@@ -1,4 +1,5 @@
 import * as Comlink from 'comlink'
+import { buildProfile } from '@/core/analysis/profile'
 import { buildDataset } from '@/core/parsing/buildDataset'
 import { getRowsAsText } from '@/core/parsing/datasetAccess'
 import { readGrid } from '@/core/parsing/readFile'
@@ -20,10 +21,12 @@ const api: DataWorkerApi = {
       delimiter: raw.delimiter,
     })
     current = ds
+    const profile = buildProfile(ds)
     return {
       datasetId: ds.id,
       source: ds.source,
       columns: ds.columns,
+      profile,
       rowCount: ds.rowCount,
       sheets: raw.sheets,
       preview: getRowsAsText(ds, 0, PREVIEW_ROWS),
