@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { InsightFeed } from '@/components/insights/InsightFeed'
 import { STAGES, type ColumnMeta, type Stage } from '@/domain'
 import { getDataWorker } from '@/workers/workerClient'
 import type { LoadResult } from '@/workers/protocol'
@@ -12,8 +13,7 @@ const BADGE: Record<string, string> = {
   text: 'bg-paper text-muted',
 }
 
-const fmt = (n: number) =>
-  n.toLocaleString('en-US', { maximumFractionDigits: 2 })
+const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 2 })
 
 function summary(result: LoadResult, col: ColumnMeta): string {
   const p = result.profile.columns.find((c) => c.columnId === col.id)
@@ -84,9 +84,9 @@ export default function App() {
 
       <main className="flex-1 space-y-6 overflow-auto p-8">
         <section className="rounded-[var(--radius-card)] bg-surface p-8 shadow-[var(--shadow-card)]">
-          <h2 className="font-serif text-3xl">Analysis check</h2>
+          <h2 className="font-serif text-3xl">Insights check</h2>
           <p className="mt-2 text-muted">
-            Pick an .xlsx, .xls, .csv or .tsv file. It is parsed and profiled in a Web Worker.
+            Pick an .xlsx, .xls, .csv or .tsv file. It is parsed, profiled and analysed in a Web Worker.
           </p>
           <input
             type="file"
@@ -117,6 +117,13 @@ export default function App() {
                   ))}
                 </ul>
               )}
+
+              <div>
+                <h3 className="font-serif text-xl">Findings</h3>
+                <div className="mt-2">
+                  <InsightFeed insights={result.insights} />
+                </div>
+              </div>
 
               <div className="overflow-x-auto">
                 <table className="min-w-full border border-line text-left text-sm">
