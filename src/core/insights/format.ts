@@ -5,7 +5,7 @@ export const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 const trimNum = (n: number, digits: number) => String(Number(n.toFixed(digits)))
 
 /** Compact, unit-aware number: 1,200 -> "1,200", 2,845,920 -> "$2.85M". */
-export function fmtNum(v: number, meta?: ColumnMeta): string {
+export function fmtNum(v: number, meta?: Pick<ColumnMeta, 'format'>): string {
   const f = meta?.format
   const abs = Math.abs(v)
   let body: string

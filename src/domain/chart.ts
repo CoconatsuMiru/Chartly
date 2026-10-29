@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { NumberFormatHint } from './dataset'
 
 export const chartTypeSchema = z.enum([
   'bar',
@@ -83,6 +84,8 @@ export interface ResolvedChart {
   series: { name: string; values: (number | null)[]; color?: string }[]
   points?: { x: number; y: number; group?: string }[]
   stats: { sourceRows: number; plottedPoints: number; downsampled: boolean }
+  /** Number formats for the value axes, so every output formats numbers the same way. */
+  format?: { x?: NumberFormatHint; y?: NumberFormatHint }
   warnings: string[]
 }
 

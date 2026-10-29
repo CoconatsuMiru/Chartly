@@ -129,7 +129,7 @@ export default function App() {
               <div>
                 <h3 className="font-serif text-xl">Recommended charts</h3>
                 <div className="mt-2">
-                  <RecommendationList items={result.recommendations} />
+                  <RecommendationList items={result.recommendations} columns={result.columns} />
                 </div>
               </div>
 

@@ -1,8 +1,10 @@
 import type {
   ChartRecommendation,
+  ChartSpec,
   ColumnMeta,
   DatasetProfile,
   Insight,
+  ResolvedChart,
   SourceInfo,
 } from '@/domain'
 
@@ -26,5 +28,6 @@ export interface LoadResult {
 export interface DataWorkerApi {
   loadDataset(file: File, opts?: LoadOptions): Promise<LoadResult>
   getRows(offset: number, limit: number): Promise<string[][]>
+  resolveChart(spec: ChartSpec): Promise<ResolvedChart>
   dispose(): void
 }

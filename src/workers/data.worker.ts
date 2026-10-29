@@ -1,15 +1,17 @@
 import * as Comlink from 'comlink'
 import { buildProfile } from '@/core/analysis/profile'
+import { resolveChart } from '@/core/charts/resolveChart'
 import { generateInsights } from '@/core/insights/generateInsights'
 import { buildDataset } from '@/core/parsing/buildDataset'
 import { getRowsAsText } from '@/core/parsing/datasetAccess'
 import { readGrid } from '@/core/parsing/readFile'
 import { recommendCharts } from '@/core/recommendations/recommend'
-import type { Dataset } from '@/domain'
+import type { Dataset, ResolvedChart } from '@/domain'
 import type { DataWorkerApi } from './protocol'
 
 const PREVIEW_ROWS = 25
 let current: Dataset | null = null
+const chartCache = new Map<string, ResolvedChart>()
 
 const api: DataWorkerApi = {
   async loadDataset(file, opts) {
@@ -23,6 +25,7 @@ const api: DataWorkerApi = {
       delimiter: raw.delimiter,
     })
     current = ds
+    chartCache.clear()
     const profile = buildProfile(ds)
     const insights = generateInsights({ dataset: ds, profile })
     const recommendations = recommendCharts({ dataset: ds, profile, insights })
@@ -44,8 +47,19 @@ const api: DataWorkerApi = {
     return current ? getRowsAsText(current, offset, limit) : []
   },
 
+  async resolveChart(spec) {
+    if (!current) throw new Error('No data is loaded yet.')
+    const key = JSON.stringify(spec)
+    const hit = chartCache.get(key)
+    if (hit) return hit
+    const result = resolveChart(spec, current)
+    chartCache.set(key, result)
+    return result
+  },
+
   dispose() {
     current = null
+    chartCache.clear()
   },
 }
 
