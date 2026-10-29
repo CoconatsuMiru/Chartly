@@ -4,6 +4,7 @@ import { generateInsights } from '@/core/insights/generateInsights'
 import { buildDataset } from '@/core/parsing/buildDataset'
 import { getRowsAsText } from '@/core/parsing/datasetAccess'
 import { readGrid } from '@/core/parsing/readFile'
+import { recommendCharts } from '@/core/recommendations/recommend'
 import type { Dataset } from '@/domain'
 import type { DataWorkerApi } from './protocol'
 
@@ -24,12 +25,14 @@ const api: DataWorkerApi = {
     current = ds
     const profile = buildProfile(ds)
     const insights = generateInsights({ dataset: ds, profile })
+    const recommendations = recommendCharts({ dataset: ds, profile, insights })
     return {
       datasetId: ds.id,
       source: ds.source,
       columns: ds.columns,
       profile,
       insights,
+      recommendations,
       rowCount: ds.rowCount,
       sheets: raw.sheets,
       preview: getRowsAsText(ds, 0, PREVIEW_ROWS),

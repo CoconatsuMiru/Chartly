@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { RecommendationList } from '@/components/charts/RecommendationList'
 import { InsightFeed } from '@/components/insights/InsightFeed'
 import { STAGES, type ColumnMeta, type Stage } from '@/domain'
 import { getDataWorker } from '@/workers/workerClient'
@@ -84,7 +85,7 @@ export default function App() {
 
       <main className="flex-1 space-y-6 overflow-auto p-8">
         <section className="rounded-[var(--radius-card)] bg-surface p-8 shadow-[var(--shadow-card)]">
-          <h2 className="font-serif text-3xl">Insights check</h2>
+          <h2 className="font-serif text-3xl">Recommendations check</h2>
           <p className="mt-2 text-muted">
             Pick an .xlsx, .xls, .csv or .tsv file. It is parsed, profiled and analysed in a Web Worker.
           </p>
@@ -122,6 +123,13 @@ export default function App() {
                 <h3 className="font-serif text-xl">Findings</h3>
                 <div className="mt-2">
                   <InsightFeed insights={result.insights} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-serif text-xl">Recommended charts</h3>
+                <div className="mt-2">
+                  <RecommendationList items={result.recommendations} />
                 </div>
               </div>
 
