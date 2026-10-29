@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "overrides": {
-  "image-size": "2.0.4"
+    "image-size": "2.0.4"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",

@@ -1,47 +1,42 @@
 import * as Comlink from 'comlink'
-import * as XLSX from 'xlsx'
-import Papa from 'papaparse'
-import type { DataWorkerApi, FileFormat, InspectResult } from './protocol'
+import { buildDataset } from '@/core/parsing/buildDataset'
+import { getRowsAsText } from '@/core/parsing/datasetAccess'
+import { readGrid } from '@/core/parsing/readFile'
+import type { Dataset } from '@/domain'
+import type { DataWorkerApi } from './protocol'
 
-const PREVIEW_ROWS = 20
-
-function detectFormat(name: string): FileFormat {
-  const ext = name.split('.').pop()?.toLowerCase()
-  if (ext === 'xlsx' || ext === 'xls' || ext === 'csv' || ext === 'tsv') return ext
-  throw new Error(`Unsupported file type: .${ext ?? ''}`)
-}
+const PREVIEW_ROWS = 25
+let current: Dataset | null = null
 
 const api: DataWorkerApi = {
-  async inspectFile(file) {
+  async loadDataset(file, opts) {
     const started = performance.now()
-    const format = detectFormat(file.name)
-    let grid: string[][]
-    let sheets: string[] = []
-
-    if (format === 'csv' || format === 'tsv') {
-      const text = await file.text()
-      const result = Papa.parse<string[]>(text, { skipEmptyLines: true })
-      grid = result.data
-    } else {
-      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
-      sheets = wb.SheetNames
-      const sheet = wb.Sheets[sheets[0]]
-      grid = XLSX.utils.sheet_to_json<string[]>(sheet, {
-        header: 1,
-        raw: false,
-        defval: '',
-      })
-    }
-
-    const out: InspectResult = {
-      format,
-      sheets,
-      rowCount: grid.length,
-      columnCount: Math.max(0, ...grid.slice(0, 100).map((r) => r.length)),
-      preview: grid.slice(0, PREVIEW_ROWS),
+    const raw = await readGrid(file, opts)
+    const ds = buildDataset(raw.grid, {
+      fileName: file.name,
+      fileSize: file.size,
+      format: raw.format,
+      sheetName: raw.sheetName,
+      delimiter: raw.delimiter,
+    })
+    current = ds
+    return {
+      datasetId: ds.id,
+      source: ds.source,
+      columns: ds.columns,
+      rowCount: ds.rowCount,
+      sheets: raw.sheets,
+      preview: getRowsAsText(ds, 0, PREVIEW_ROWS),
       parseMs: Math.round(performance.now() - started),
     }
-    return out
+  },
+
+  async getRows(offset, limit) {
+    return current ? getRowsAsText(current, offset, limit) : []
+  },
+
+  dispose() {
+    current = null
   },
 }
 

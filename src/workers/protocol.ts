@@ -1,14 +1,21 @@
-export type FileFormat = 'xlsx' | 'xls' | 'csv' | 'tsv'
+import type { ColumnMeta, SourceInfo } from '@/domain'
 
-export interface InspectResult {
-  format: FileFormat
-  sheets: string[]
+export interface LoadOptions {
+  sheet?: string
+}
+
+export interface LoadResult {
+  datasetId: string
+  source: SourceInfo
+  columns: ColumnMeta[]
   rowCount: number
-  columnCount: number
+  sheets: string[]
   preview: string[][]
   parseMs: number
 }
 
 export interface DataWorkerApi {
-  inspectFile(file: File): Promise<InspectResult>
+  loadDataset(file: File, opts?: LoadOptions): Promise<LoadResult>
+  getRows(offset: number, limit: number): Promise<string[][]>
+  dispose(): void
 }
