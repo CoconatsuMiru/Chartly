@@ -9,10 +9,11 @@ const MIN_POINTS = 6
 function seriesPerMeasure(ctx: InsightContext) {
   const time = getTimeColumn(ctx.dataset, ctx.profile)
   if (!time) return []
+  const withYear = time.meta.dateFormat !== 'month-name'
   return getMeasures(ctx.dataset).map((m) => {
     const agg = aggregationFor(m.meta)
     const { points, grain } = buildMeasureSeries(time.values, m.values, time.stats, agg)
-    return { m, agg, points, grain, timeId: time.meta.id }
+    return { m, agg, points, grain, timeId: time.meta.id, withYear }
   })
 }
 
@@ -20,7 +21,7 @@ export const trendRule: InsightRule = {
   id: 'trend.linear',
   run(ctx) {
     const out: Insight[] = []
-    for (const { m, agg, points, grain, timeId } of seriesPerMeasure(ctx)) {
+    for (const { m, agg, points, grain, timeId, withYear } of seriesPerMeasure(ctx)) {
       if (points.length < MIN_POINTS) continue
       const ys = points.map((p) => p.value)
       const mean = ys.reduce((s, v) => s + v, 0) / ys.length
@@ -45,7 +46,7 @@ export const trendRule: InsightRule = {
         confidence:
           ys.length >= 12 && r2 >= 0.8 ? 'high' : ys.length >= 8 && r2 >= 0.6 ? 'medium' : 'low',
         title: `${name} is trending ${up ? 'up' : 'down'}`,
-        narrative: `${name} ${change >= 0 ? 'rose' : 'fell'} ${fmtPct(Math.abs(change))} from ${fmtPeriod(points[0].t, grain)} to ${fmtPeriod(points[points.length - 1].t, grain)}, a ${r2 >= 0.8 ? 'steady' : 'general'} ${up ? 'upward' : 'downward'} trend (R² = ${r2.toFixed(2)}).`,
+        narrative: `${name} ${change >= 0 ? 'rose' : 'fell'} ${fmtPct(Math.abs(change))} from ${fmtPeriod(points[0].t, grain, withYear)} to ${fmtPeriod(points[points.length - 1].t, grain, withYear)}, a ${r2 >= 0.8 ? 'steady' : 'general'} ${up ? 'upward' : 'downward'} trend (R² = ${r2.toFixed(2)}).`,
         evidence: [
           { label: 'Measured as', value: `${GRAIN_ADJ[grain]} ${agg === 'sum' ? 'total' : 'average'}` },
           { label: 'Periods', value: ys.length },
@@ -67,7 +68,7 @@ export const changeRule: InsightRule = {
   id: 'change.latest',
   run(ctx) {
     const out: Insight[] = []
-    for (const { m, agg, points, grain, timeId } of seriesPerMeasure(ctx)) {
+    for (const { m, agg, points, grain, timeId, withYear } of seriesPerMeasure(ctx)) {
       if (points.length < 4) continue
       const prev = points[points.length - 2]
       const last = points[points.length - 1]
@@ -84,7 +85,7 @@ export const changeRule: InsightRule = {
         importance: clamp01(0.4 + Math.min(0.3, Math.abs(pct) * 0.3)),
         confidence: points.length >= 8 ? 'medium' : 'low',
         title: `${name} ${pct > 0 ? 'jumped' : 'dropped'} in the latest period`,
-        narrative: `${name} ${pct > 0 ? 'increased' : 'decreased'} ${fmtPct(Math.abs(pct))} in ${fmtPeriod(last.t, grain)} compared with ${fmtPeriod(prev.t, grain)} (${fmtNum(prev.value, m.meta)} to ${fmtNum(last.value, m.meta)}).`,
+        narrative: `${name} ${pct > 0 ? 'increased' : 'decreased'} ${fmtPct(Math.abs(pct))} in ${fmtPeriod(last.t, grain, withYear)} compared with ${fmtPeriod(prev.t, grain, withYear)} (${fmtNum(prev.value, m.meta)} to ${fmtNum(last.value, m.meta)}).`,
         evidence: [
           { label: 'Measured as', value: `${GRAIN_ADJ[grain]} ${agg === 'sum' ? 'total' : 'average'}` },
           { label: 'Previous period', value: fmtNum(prev.value, m.meta) },

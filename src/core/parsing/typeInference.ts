@@ -1,6 +1,6 @@
 import type { ColumnRole, ColumnType, NumberFormatHint } from '@/domain'
 import { isMissing } from './cells'
-import { detectDateOrder, parseDate, type DateOrder } from './dateParsing'
+import { detectDateOrder, parseDate, parseMonthName, type DateOrder } from './dateParsing'
 import { parseNumber, type ParsedNumber } from './numberParsing'
 
 export interface InferredColumn {
@@ -10,6 +10,8 @@ export interface InferredColumn {
   format?: NumberFormatHint
   dateOrder?: DateOrder
   ambiguousDates?: boolean
+  /** The column holds bare month names, not full dates. */
+  monthNames?: boolean
 }
 
 const BOOL = new Set(['true', 'false', 'yes', 'no'])
@@ -31,6 +33,12 @@ export function inferColumn(values: string[], name = ''): InferredColumn {
 
   if (s.every((v) => BOOL.has(v.toLowerCase()))) {
     return { type: 'boolean', role: 'dimension', confidence: 1 }
+  }
+
+  // Month names: tolerant of a few typos, but needs several different months.
+  const monthHits = s.map(parseMonthName).filter((m): m is number => m !== null)
+  if (monthHits.length / n >= 0.8 && new Set(monthHits).size >= 3) {
+    return { type: 'date', role: 'time', confidence: monthHits.length / n, monthNames: true }
   }
 
   const { order, ambiguous } = detectDateOrder(s)

@@ -36,21 +36,27 @@ export const GRAIN_ADJ: Record<DateGrain, string> = {
   year: 'yearly',
 }
 
-export function fmtPeriod(ts: number, grain: DateGrain): string {
+/** withYear is false for month-name columns, where no real year exists. */
+export function fmtPeriod(ts: number, grain: DateGrain, withYear = true): string {
   const d = new Date(ts)
   switch (grain) {
     case 'year':
       return String(d.getUTCFullYear())
     case 'quarter':
-      return `Q${Math.floor(d.getUTCMonth() / 3) + 1} ${d.getUTCFullYear()}`
+      return withYear
+        ? `Q${Math.floor(d.getUTCMonth() / 3) + 1} ${d.getUTCFullYear()}`
+        : `Q${Math.floor(d.getUTCMonth() / 3) + 1}`
     case 'month':
-      return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+      return d.toLocaleDateString(
+        'en-US',
+        withYear ? { month: 'short', year: 'numeric', timeZone: 'UTC' } : { month: 'short', timeZone: 'UTC' },
+      )
     default:
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
+      return d.toLocaleDateString(
+        'en-US',
+        withYear
+          ? { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
+          : { month: 'short', day: 'numeric', timeZone: 'UTC' },
+      )
   }
 }

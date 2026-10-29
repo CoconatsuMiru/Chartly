@@ -1,4 +1,5 @@
 import type { Dataset } from '@/domain'
+import { MONTH_LABELS } from './dateParsing'
 
 export function formatCell(ds: Dataset, col: number, row: number): string {
   const meta = ds.columns[col]
@@ -8,7 +9,11 @@ export function formatCell(ds: Dataset, col: number, row: number): string {
     case 'f64': {
       const v = d.values[row]
       if (Number.isNaN(v)) return ''
-      if (meta.type === 'date') return new Date(v).toISOString().slice(0, 10)
+      if (meta.type === 'date') {
+        return meta.dateFormat === 'month-name'
+          ? MONTH_LABELS[new Date(v).getUTCMonth()]
+          : new Date(v).toISOString().slice(0, 10)
+      }
       const f = meta.format
       const text = Math.abs(v).toLocaleString('en-US', {
         minimumFractionDigits: f?.decimals ?? 0,

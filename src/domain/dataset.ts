@@ -29,6 +29,8 @@ export interface ColumnMeta {
   type: ColumnType
   role: ColumnRole
   format?: NumberFormatHint
+  /** Set when a date column holds bare month names ("January"), so no real year exists. */
+  dateFormat?: 'month-name'
   typeConfidence: number
 }
 

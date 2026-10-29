@@ -1,9 +1,15 @@
 import type { ColumnData, ColumnMeta, Dataset, ParseWarning, SourceInfo } from '@/domain'
 import { isMissing } from './cells'
-import { parseDate } from './dateParsing'
+import { parseDate, parseMonthNameDate } from './dateParsing'
 import { normaliseGrid } from './headerDetection'
 import { parseNumber } from './numberParsing'
 import { inferColumn, type InferredColumn } from './typeInference'
+
+function parseCell(v: string, inf: InferredColumn): number | null {
+  if (inf.type === 'number') return parseNumber(v)?.value ?? null
+  if (inf.monthNames) return parseMonthNameDate(v)
+  return parseDate(v, inf.dateOrder ?? 'mdy')
+}
 
 function encodeColumn(
   values: string[],
@@ -23,8 +29,7 @@ function encodeColumn(
         out[i] = NaN
         continue
       }
-      const parsed =
-        inf.type === 'number' ? (parseNumber(v)?.value ?? null) : parseDate(v, inf.dateOrder ?? 'mdy')
+      const parsed = parseCell(v, inf)
       if (parsed === null) {
         out[i] = NaN
         bad++
@@ -35,7 +40,7 @@ function encodeColumn(
     if (bad > 0) {
       warnings.push({
         code: inf.type === 'number' ? 'non-numeric-cells' : 'unparseable-dates',
-        message: `${bad} cell(s) in "${name}" could not be read as ${inf.type === 'number' ? 'numbers' : 'dates'} and were treated as missing.`,
+        message: `${bad} cell(s) in "${name}" could not be read as ${inf.type === 'number' ? 'numbers' : inf.monthNames ? 'month names' : 'dates'} and were treated as missing.`,
         columnId: id,
       })
     }
@@ -99,6 +104,7 @@ export function buildDataset(
       type: inf.type,
       role: inf.role,
       format: inf.format,
+      dateFormat: inf.monthNames ? 'month-name' : undefined,
       typeConfidence: inf.confidence,
     })
     data.push(encodeColumn(values, inf, id, name, warnings))
