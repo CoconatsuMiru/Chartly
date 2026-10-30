@@ -1,3 +1,4 @@
+import type { KpiRequest } from '@/core/charts/kpi'
 import type {
   ChartRecommendation,
   ChartSpec,
@@ -29,5 +30,6 @@ export interface DataWorkerApi {
   loadDataset(file: File, opts?: LoadOptions): Promise<LoadResult>
   getRows(offset: number, limit: number): Promise<string[][]>
   resolveChart(spec: ChartSpec): Promise<ResolvedChart>
+  computeKpis(items: KpiRequest[]): Promise<(number | null)[]>
   dispose(): void
 }

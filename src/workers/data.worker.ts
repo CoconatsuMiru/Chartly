@@ -1,5 +1,6 @@
 import * as Comlink from 'comlink'
 import { buildProfile } from '@/core/analysis/profile'
+import { computeKpi } from '@/core/charts/kpi'
 import { resolveChart } from '@/core/charts/resolveChart'
 import { generateInsights } from '@/core/insights/generateInsights'
 import { buildDataset } from '@/core/parsing/buildDataset'
@@ -55,6 +56,12 @@ const api: DataWorkerApi = {
     const result = resolveChart(spec, current)
     chartCache.set(key, result)
     return result
+  },
+
+  async computeKpis(items) {
+    const ds = current
+    if (!ds) throw new Error('No data is loaded yet.')
+    return items.map((item) => computeKpi(ds, item))
   },
 
   dispose() {

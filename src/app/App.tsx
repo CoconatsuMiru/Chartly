@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/layout/AppShell'
 import ComingSoon from '@/pages/ComingSoon'
+import ComposePage from '@/pages/ComposePage/ComposePage'
 import ExplorePage from '@/pages/ExplorePage/ExplorePage'
 import ImportPage from '@/pages/ImportPage/ImportPage'
 import { useSessionStore } from '@/state/sessionStore'
@@ -14,6 +15,8 @@ export default function App() {
       <ImportPage />
     ) : stage === 'explore' ? (
       <ExplorePage />
+    ) : stage === 'compose' ? (
+      <ComposePage />
     ) : (
       <ComingSoon stage={stage} />
     )

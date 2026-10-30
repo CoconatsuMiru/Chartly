@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { Stage } from '@/domain'
 import type { LoadResult } from '@/workers/protocol'
 import { disposeDataWorker, getDataWorker } from '@/workers/workerClient'
+import { useReportStore } from './reportStore'
 
 export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -69,6 +70,7 @@ export const useSessionStore = create<SessionState>()((set) => ({
   reset() {
     loadToken++
     disposeDataWorker()
+    useReportStore.getState().clear()
     set({ ...empty })
   },
 }))
