@@ -1,8 +1,10 @@
 import { compatibleTypes } from '@/core/charts/compat'
 import { CHART_TYPE_LABEL } from '@/core/charts/labels'
 import type { ChartSpec, ReportDocument } from '@/domain'
+import { setLayoutTemplate } from '@/state/reportActions'
 import { useReportStore } from '@/state/reportStore'
 import { useSessionStore } from '@/state/sessionStore'
+import { LayoutPicker } from './LayoutPicker'
 import { ThemePicker } from './ThemePicker'
 
 interface Props {
@@ -70,6 +72,12 @@ export function Inspector({ report, selectedId }: Props) {
 
   return (
     <div className="space-y-6">
+      <section>
+        <h3 className="mb-2 font-serif text-lg">Layout</h3>
+        <LayoutPicker value={report.layoutTemplateId} onChange={setLayoutTemplate} />
+        <p className="mt-2 text-xs text-muted">Shown in the Preview tab and used for exports.</p>
+      </section>
+
       <section>
         <h3 className="mb-2 font-serif text-lg">Theme</h3>
         <ThemePicker value={report.themeId} onChange={setTheme} />

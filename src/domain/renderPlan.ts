@@ -14,7 +14,7 @@ export type PositionedElement =
   | { kind: 'chart'; x: number; y: number; w: number; h: number; chartId: string }
   | { kind: 'kpi'; x: number; y: number; w: number; h: number; label: string; value: string; delta?: string }
   | { kind: 'table'; x: number; y: number; w: number; h: number; header: string[]; rows: string[][] }
-  | { kind: 'shape'; x: number; y: number; w: number; h: number; fill?: string; radius?: number }
+  | { kind: 'shape'; x: number; y: number; w: number; h: number; fill?: string; stroke?: string; radius?: number }
 
 /** Shared intermediate representation: preview, PDF and PPTX all draw this. */
 export interface RenderPlan {
