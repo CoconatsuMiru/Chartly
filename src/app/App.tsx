@@ -1,7 +1,7 @@
 import { AppShell } from '@/components/layout/AppShell'
-import ComingSoon from '@/pages/ComingSoon'
 import ComposePage from '@/pages/ComposePage/ComposePage'
 import ExplorePage from '@/pages/ExplorePage/ExplorePage'
+import ExportPage from '@/pages/ExportPage/ExportPage'
 import ImportPage from '@/pages/ImportPage/ImportPage'
 import { useSessionStore } from '@/state/sessionStore'
 import { ErrorBoundary } from './ErrorBoundary'
@@ -18,7 +18,7 @@ export default function App() {
     ) : stage === 'compose' ? (
       <ComposePage />
     ) : (
-      <ComingSoon stage={stage} />
+      <ExportPage />
     )
 
   return (
