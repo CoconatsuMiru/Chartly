@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx'
 import { ChartlyError, type SourceInfo } from '@/domain'
 
 export const MAX_FILE_BYTES = 50 * 1024 * 1024
+export const MAX_ROWS = 500_000
 
 export interface RawGrid {
   grid: string[][]
@@ -21,7 +22,20 @@ function detectFormat(name: string): SourceInfo['format'] {
   )
 }
 
-export async function readGrid(file: File, opts: { sheet?: string } = {}): Promise<RawGrid> {
+function tooManyRows(rows: number, max: number): ChartlyError {
+  return new ChartlyError(
+    'FILE_TOO_LARGE',
+    `This file has about ${rows.toLocaleString('en-US')} rows. Chartly handles up to ${max.toLocaleString('en-US')} rows.`,
+    true,
+    'Try exporting a smaller date range, or a sample of the rows.',
+  )
+}
+
+export async function readGrid(
+  file: File,
+  opts: { sheet?: string; maxRows?: number } = {},
+): Promise<RawGrid> {
+  const maxRows = opts.maxRows ?? MAX_ROWS
   if (file.size === 0) throw new ChartlyError('EMPTY_SHEET', 'This file is empty.')
   if (file.size > MAX_FILE_BYTES) {
     throw new ChartlyError(
@@ -40,6 +54,7 @@ export async function readGrid(file: File, opts: { sheet?: string } = {}): Promi
         skipEmptyLines: 'greedy',
         delimiter: format === 'tsv' ? '\t' : '',
       })
+      if (res.data.length - 1 > maxRows) throw tooManyRows(res.data.length - 1, maxRows)
       return { grid: res.data, format, sheets: [], delimiter: res.meta.delimiter }
     }
 
@@ -50,6 +65,14 @@ export async function readGrid(file: File, opts: { sheet?: string } = {}): Promi
         ? opts.sheet
         : (sheets.find((n) => wb.Sheets[n]['!ref']) ?? sheets[0])
     if (!sheetName) throw new ChartlyError('EMPTY_SHEET', 'This workbook has no sheets.')
+
+    // Check the size from the sheet's range, before converting every cell.
+    const ref = wb.Sheets[sheetName]['!ref']
+    if (ref) {
+      const range = XLSX.utils.decode_range(ref)
+      const rows = range.e.r - range.s.r
+      if (rows > maxRows) throw tooManyRows(rows, maxRows)
+    }
 
     const grid = XLSX.utils.sheet_to_json<string[]>(wb.Sheets[sheetName], {
       header: 1,

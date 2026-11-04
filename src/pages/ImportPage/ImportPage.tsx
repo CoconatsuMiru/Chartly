@@ -2,6 +2,7 @@ import { DataGrid } from '@/components/data/DataGrid'
 import { DataHealth } from '@/components/data/DataHealth'
 import { DropZone } from '@/components/data/DropZone'
 import { KpiTile } from '@/components/data/KpiTile'
+import { LoadProgress } from '@/components/data/LoadProgress'
 import { MONTH_LABELS } from '@/core/parsing/dateParsing'
 import { useSessionStore } from '@/state/sessionStore'
 import { formatBytes } from '@/utils/format'
@@ -44,11 +45,7 @@ export default function ImportPage() {
         </p>
       </header>
 
-      {loading && (
-        <p role="status" className="rounded-lg bg-paper px-4 py-3 text-sm text-muted">
-          Reading {file?.name ?? 'your file'}…
-        </p>
-      )}
+      <LoadProgress />
 
       {error && (
         <p role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">

@@ -15,9 +15,15 @@ let current: Dataset | null = null
 const chartCache = new Map<string, ResolvedChart>()
 
 const api: DataWorkerApi = {
-  async loadDataset(file, opts) {
+  async loadDataset(file, opts, onProgress) {
     const started = performance.now()
+    // Fire and forget: progress messages are sent straight away, even while this thread is busy.
+    const report = (stage: string, fraction: number) => void onProgress?.({ stage, fraction })
+
+    report('Reading the file', 0.05)
     const raw = await readGrid(file, opts)
+
+    report('Detecting column types', 0.3)
     const ds = buildDataset(raw.grid, {
       fileName: file.name,
       fileSize: file.size,
@@ -27,9 +33,16 @@ const api: DataWorkerApi = {
     })
     current = ds
     chartCache.clear()
+
+    report('Profiling columns', 0.55)
     const profile = buildProfile(ds)
+
+    report('Looking for findings', 0.75)
     const insights = generateInsights({ dataset: ds, profile })
+
+    report('Choosing charts', 0.9)
     const recommendations = recommendCharts({ dataset: ds, profile, insights })
+
     return {
       datasetId: ds.id,
       source: ds.source,

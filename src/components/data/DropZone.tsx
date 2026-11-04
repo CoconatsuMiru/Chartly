@@ -61,7 +61,7 @@ export function DropZone({ onFile, disabled, compact }: Props) {
               </span>
             ))}
           </span>
-          <span className="text-xs text-muted">Up to 50 MB</span>
+          <span className="text-xs text-muted">Up to 50 MB and 500,000 rows</span>
         </>
       )}
     </label>

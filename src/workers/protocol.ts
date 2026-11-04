@@ -5,6 +5,7 @@ import type {
   ColumnMeta,
   DatasetProfile,
   Insight,
+  Progress,
   ResolvedChart,
   SourceInfo,
 } from '@/domain'
@@ -27,7 +28,7 @@ export interface LoadResult {
 }
 
 export interface DataWorkerApi {
-  loadDataset(file: File, opts?: LoadOptions): Promise<LoadResult>
+  loadDataset(file: File, opts?: LoadOptions, onProgress?: (p: Progress) => void): Promise<LoadResult>
   getRows(offset: number, limit: number): Promise<string[][]>
   resolveChart(spec: ChartSpec): Promise<ResolvedChart>
   computeKpis(items: KpiRequest[]): Promise<(number | null)[]>

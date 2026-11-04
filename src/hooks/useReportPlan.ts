@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fmtNum } from '@/core/insights/format'
-import { canvasMeasure } from '@/core/report/layout/measure'
+import { loadReportFonts } from '@/core/report/layout/fonts'
 import { layoutReport } from '@/core/report/layout/layoutReport'
+import { canvasMeasure } from '@/core/report/layout/measure'
 import type { Aggregation, RenderPlan, ReportDocument } from '@/domain'
 import { useSessionStore } from '@/state/sessionStore'
 import { getTheme } from '@/themes/builtin'
@@ -23,7 +24,7 @@ export function useReportPlan(report: ReportDocument | null, enabled: boolean): 
   )
 
   useEffect(() => {
-    void document.fonts.ready.then(() => setFontsReady(true))
+    void loadReportFonts().then(() => setFontsReady(true))
   }, [])
 
   useEffect(() => {
