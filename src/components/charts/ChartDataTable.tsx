@@ -10,7 +10,7 @@ export function ChartDataTable({ chart }: { chart: ResolvedChart }) {
     const pts = (chart.points ?? []).slice(0, MAX_POINT_ROWS)
     const grouped = pts.some((p) => p.group !== undefined)
     return (
-      <div className="max-h-[280px] overflow-auto">
+      <div role="region" aria-label="Chart data" tabIndex={0} className="max-h-70 overflow-auto">
         <table className="min-w-full text-left text-xs">
           <thead className="sticky top-0 bg-surface">
             <tr className="border-b border-line">
@@ -37,7 +37,7 @@ export function ChartDataTable({ chart }: { chart: ResolvedChart }) {
   }
 
   return (
-    <div className="max-h-[280px] overflow-auto">
+    <div className="max-h-70 overflow-auto">
       <table className="min-w-full text-left text-xs">
         <thead className="sticky top-0 bg-surface">
           <tr className="border-b border-line">

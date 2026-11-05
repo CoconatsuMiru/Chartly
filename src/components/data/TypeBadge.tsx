@@ -2,7 +2,7 @@ import type { ColumnMeta, ColumnType } from '@/domain'
 
 const STYLE: Record<ColumnType, string> = {
   number: 'bg-primary-soft text-primary',
-  date: 'bg-accent-soft text-accent',
+  date: 'bg-accent-soft text-accent-ink',
   category: 'bg-paper text-ink ring-1 ring-line',
   boolean: 'bg-paper text-ink ring-1 ring-line',
   identifier: 'bg-paper text-muted ring-1 ring-line',

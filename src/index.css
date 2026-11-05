@@ -4,11 +4,14 @@
   --color-paper: #f7f5f0;
   --color-surface: #ffffff;
   --color-ink: #1b2430;
-  --color-muted: #6b7482;
+  /* Darkened from #6b7482 so small grey text passes 4.5:1 on the paper background. */
+  --color-muted: #5b6472;
   --color-line: #e4e0d6;
   --color-primary: #0f5b5c;
   --color-primary-soft: #dcecec;
   --color-accent: #d98e04;
+  /* Amber for TEXT on the soft amber background (the plain accent is too light to read there). */
+  --color-accent-ink: #8a5a00;
   --color-accent-soft: #fbefd5;
   --color-danger: #b4372f;
 

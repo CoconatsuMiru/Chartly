@@ -22,7 +22,7 @@ const FORMATS: { id: ExportFormat; name: string; blurb: string }[] = [
 
 const LEVEL: Record<CheckLevel, { label: string; cls: string }> = {
   error: { label: 'Problem', cls: 'bg-danger/10 text-danger' },
-  warn: { label: 'Check', cls: 'bg-accent-soft text-accent' },
+  warn: { label: 'Check', cls: 'bg-accent-soft text-accent-ink' },
   info: { label: 'Note', cls: 'bg-paper text-muted ring-1 ring-line' },
   ok: { label: 'Ready', cls: 'bg-primary-soft text-primary' },
 }
@@ -106,7 +106,11 @@ export default function ExportPage() {
             {plan?.format === 'deck' ? 'Slides' : 'Pages'}
           </h3>
           {plan ? (
-            <ol aria-label={plan.format === 'deck' ? 'Slides' : 'Pages'} className="flex gap-4 overflow-x-auto pb-3">
+            <ol
+              aria-label={plan.format === 'deck' ? 'Slides' : 'Pages'}
+              tabIndex={0}
+              className="flex gap-4 overflow-x-auto pb-3"
+            >
               {plan.pages.map((_, i) => (
                 <li key={i} className="shrink-0 space-y-1">
                   <PlanPage plan={plan} index={i} report={report} scale={THUMB_HEIGHT / (plan.page.height * PX_PER_PT)} />

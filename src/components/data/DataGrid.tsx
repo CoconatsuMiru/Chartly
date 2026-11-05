@@ -54,7 +54,7 @@ export function DataGrid({ columns, rowCount }: Props) {
       aria-label="Data preview"
       aria-rowcount={rowCount + 1}
       tabIndex={0}
-      className="h-[420px] overflow-auto rounded-lg border border-line bg-surface"
+      className="h-105 overflow-auto rounded-lg border border-line bg-surface"
     >
       <div style={{ minWidth, width: '100%' }}>
         <div
@@ -98,7 +98,7 @@ export function DataGrid({ columns, rowCount }: Props) {
                     role="cell"
                     className={`truncate px-3 py-2 ${c.type === 'number' ? 'text-right' : ''}`}
                   >
-                    {row ? (row[ci] ?? '') : <span className="text-line">···</span>}
+                    {row ? (row[ci] ?? '') : <span className="text-muted" aria-hidden="true">···</span>}
                   </div>
                 ))}
               </div>

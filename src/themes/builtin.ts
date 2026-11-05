@@ -14,7 +14,7 @@ export const THEMES: Theme[] = [
       paper: '#F7F5F0',
       surface: '#FFFFFF',
       ink: '#1B2430',
-      muted: '#6B7482',
+      muted: '#5B6472',
       line: '#E4E0D6',
       primary: '#0F5B5C',
       accent: '#D98E04',
