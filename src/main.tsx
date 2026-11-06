@@ -1,4 +1,5 @@
 import '@fontsource/source-serif-4/400.css'
+import '@fontsource/source-serif-4/400-italic.css'
 import '@fontsource/source-serif-4/700.css'
 import '@fontsource/instrument-sans/400.css'
 import '@fontsource/instrument-sans/500.css'

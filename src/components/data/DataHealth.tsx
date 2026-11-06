@@ -1,4 +1,5 @@
 import type { ParseWarning } from '@/domain'
+import { Icon } from '../ui/Icon'
 
 interface Props {
   warnings: ParseWarning[]
@@ -13,16 +14,22 @@ export function DataHealth({ warnings, duplicateRows }: Props) {
 
   if (notes.length === 0) {
     return (
-      <p className="rounded-lg bg-primary-soft px-4 py-3 text-sm text-primary">
+      <p className="flex items-center gap-3 rounded-2xl bg-primary-soft px-5 py-3.5 text-sm text-primary-strong">
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-white">
+          <Icon name="check" size={14} />
+        </span>
         No data problems found. Every cell was read cleanly.
       </p>
     )
   }
 
   return (
-    <section aria-label="Data health" className="rounded-lg bg-accent-soft px-4 py-3 text-sm">
-      <h3 className="font-medium">Data notes</h3>
-      <ul className="mt-1 list-disc space-y-0.5 pl-5">
+    <section aria-label="Data health" className="rounded-2xl border border-accent/30 bg-accent-soft px-5 py-4 text-sm">
+      <h3 className="flex items-center gap-2 font-semibold text-accent-ink">
+        <Icon name="info" size={16} />
+        Data notes
+      </h3>
+      <ul className="mt-2 list-disc space-y-1 pl-6 text-ink">
         {notes.map((n, i) => (
           <li key={i}>{n}</li>
         ))}

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from 'zustand'
+import { Icon } from '@/components/ui/Icon'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { Inspector } from '@/components/report/Inspector'
 import { OutlinePanel } from '@/components/report/OutlinePanel'
 import { PageCanvas } from '@/components/report/PageCanvas'
@@ -66,86 +68,84 @@ export default function ComposePage() {
 
   const theme = getTheme(report.themeId)
   const history = useReportStore.temporal.getState()
-  const btn =
-    'rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-paper disabled:opacity-40 disabled:hover:bg-transparent'
-  const tab = (v: View) =>
-    `rounded-md px-3 py-1 text-sm transition-colors ${view === v ? 'bg-primary text-white' : 'text-muted hover:bg-paper'}`
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-serif text-3xl">Compose</h2>
-          <p className="mt-1 text-muted">
-            {view === 'edit'
-              ? 'Click any text to edit it. Drag sections in the outline to reorder them.'
-              : 'A paginated preview of your report with the chosen layout.'}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div role="group" aria-label="View" className="flex rounded-lg border border-line p-0.5">
-            <button type="button" aria-pressed={view === 'edit'} onClick={() => setView('edit')} className={tab('edit')}>
-              Edit
+    <div>
+      <PageHeader
+        eyebrow="Stage 3 · Compose"
+        title={
+          <>
+            Compose your <em>report</em>
+          </>
+        }
+        description={
+          view === 'edit'
+            ? 'Click any text to edit it. Drag sections in the outline to reorder them.'
+            : 'A paginated preview of your report with the chosen layout.'
+        }
+        actions={
+          <>
+            <div role="group" aria-label="View" className="seg">
+              <button type="button" aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+                Edit
+              </button>
+              <button type="button" aria-pressed={view === 'preview'} onClick={() => setView('preview')}>
+                Preview
+              </button>
+            </div>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={!canUndo} onClick={() => history.undo()}>
+              <Icon name="undo" size={16} />
+              Undo
+            </button>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={!canRedo} onClick={() => history.redo()}>
+              <Icon name="redo" size={16} />
+              Redo
             </button>
             <button
               type="button"
-              aria-pressed={view === 'preview'}
-              onClick={() => setView('preview')}
-              className={tab('preview')}
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    'Rebuild the report from your current chart selections? Your edits will be replaced (you can undo).',
+                  )
+                ) {
+                  build()
+                }
+              }}
             >
-              Preview
+              Rebuild from selections
             </button>
-          </div>
-          <button type="button" className={btn} disabled={!canUndo} onClick={() => history.undo()}>
-            Undo
-          </button>
-          <button type="button" className={btn} disabled={!canRedo} onClick={() => history.redo()}>
-            Redo
-          </button>
-          <button
-            type="button"
-            className={btn}
-            onClick={() => {
-              if (
-                window.confirm(
-                  'Rebuild the report from your current chart selections? Your edits will be replaced (you can undo).',
-                )
-              ) {
-                build()
-              }
-            }}
-          >
-            Rebuild from selections
-          </button>
-          <button type="button" className={btn} onClick={() => setStage('explore')}>
-            Back to Explore
-          </button>
-          <button
-            type="button"
-            onClick={() => setStage('export')}
-            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-white hover:opacity-90"
-          >
-            Continue to Export
-          </button>
-        </div>
-      </header>
+            <button type="button" className="btn btn-secondary" onClick={() => setStage('explore')}>
+              <Icon name="arrowLeft" size={16} />
+              Back to Explore
+            </button>
+            <button type="button" onClick={() => setStage('export')} className="btn btn-primary">
+              Continue to Export
+              <Icon name="arrowRight" size={16} />
+            </button>
+          </>
+        }
+      />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_270px]">
-        <aside className="lg:sticky lg:top-8 lg:max-h-[calc(100vh-4rem)] lg:overflow-auto">
+      <div className="grid items-start gap-5 lg:grid-cols-[272px_minmax(0,1fr)] xl:grid-cols-[272px_minmax(0,1fr)_300px]">
+        <aside className="card p-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-auto">
           <OutlinePanel report={report} selectedId={selectedId} onSelect={setSelectedId} />
         </aside>
 
-        {view === 'edit' ? (
-          <PageCanvas report={report} theme={theme} selectedId={selectedId} onSelect={setSelectedId} />
-        ) : plan ? (
-          <PreviewPane plan={plan} report={report} />
-        ) : (
-          <p role="status" className="text-sm text-muted">
-            Laying out pages…
-          </p>
-        )}
+        <div className="desk min-w-0 rounded-[22px] p-4 sm:p-8">
+          {view === 'edit' ? (
+            <PageCanvas report={report} theme={theme} selectedId={selectedId} onSelect={setSelectedId} />
+          ) : plan ? (
+            <PreviewPane plan={plan} report={report} />
+          ) : (
+            <p role="status" className="text-center text-sm text-ink-soft">
+              Laying out pages…
+            </p>
+          )}
+        </div>
 
-        <aside className="lg:col-span-2 xl:sticky xl:top-8 xl:col-span-1 xl:max-h-[calc(100vh-4rem)] xl:overflow-auto">
+        <aside className="card p-5 lg:col-span-2 xl:sticky xl:top-6 xl:col-span-1 xl:max-h-[calc(100vh-3rem)] xl:overflow-auto">
           <Inspector report={report} selectedId={selectedId} />
         </aside>
       </div>

@@ -15,22 +15,33 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { sectionLabel } from '@/core/report/sections'
-import type { ReportDocument } from '@/domain'
+import type { ReportDocument, SectionBlock } from '@/domain'
 import { useReportStore } from '@/state/reportStore'
 import { useSessionStore } from '@/state/sessionStore'
 import { newId } from '@/utils/ids'
+import { Icon, type IconName } from '../ui/Icon'
+
+const KIND_ICON: Record<SectionBlock['kind'], IconName> = {
+  cover: 'cover',
+  kpis: 'kpi',
+  text: 'text',
+  chart: 'bars',
+  insights: 'spark',
+  table: 'table',
+}
 
 interface RowProps {
   id: string
   label: string
+  kind: SectionBlock['kind']
   hidden: boolean
   selected: boolean
   onSelect: () => void
 }
 
-const iconBtn = 'rounded px-1.5 py-0.5 text-xs text-muted hover:bg-paper'
+const tool = 'rounded-md p-1 text-muted transition-colors hover:bg-black/8 hover:text-ink'
 
-function Row({ id, label, hidden, selected, onSelect }: RowProps) {
+function Row({ id, label, kind, hidden, selected, onSelect }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const moveBy = useReportStore((s) => s.moveBy)
   const toggleHidden = useReportStore((s) => s.toggleHidden)
@@ -40,32 +51,46 @@ function Row({ id, label, hidden, selected, onSelect }: RowProps) {
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`flex items-center gap-0.5 rounded-lg border px-1 py-1 ${
-        selected ? 'border-primary bg-primary-soft' : 'border-line bg-surface'
-      } ${isDragging ? 'opacity-60' : ''}`}
+      className={`group flex items-center gap-1 rounded-xl border px-1.5 py-1.5 transition-colors ${
+        selected ? 'border-primary/40 bg-primary-soft' : 'border-transparent hover:bg-paper'
+      } ${isDragging ? 'bg-white opacity-70 shadow-lift' : ''}`}
     >
-      <button type="button" aria-label={`Reorder ${label}`} {...attributes} {...listeners} className="cursor-grab px-1 text-muted">
-        ⠿
-      </button>
       <button
         type="button"
-        onClick={onSelect}
-        className={`min-w-0 flex-1 truncate text-left text-sm ${hidden ? 'text-muted line-through' : ''}`}
+        aria-label={`Reorder ${label}`}
+        {...attributes}
+        {...listeners}
+        className="cursor-grab touch-none rounded p-1 text-muted hover:text-ink"
       >
-        {label}
+        <Icon name="grip" size={16} />
       </button>
-      <button type="button" aria-label={`Move ${label} up`} onClick={() => moveBy(id, -1)} className={iconBtn}>
-        ↑
+      <button type="button" onClick={onSelect} className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm">
+        <Icon name={KIND_ICON[kind]} size={16} className="shrink-0 text-primary" />
+        <span className={`truncate ${hidden ? 'text-muted line-through' : 'font-medium'}`}>{label}</span>
       </button>
-      <button type="button" aria-label={`Move ${label} down`} onClick={() => moveBy(id, 1)} className={iconBtn}>
-        ↓
-      </button>
-      <button type="button" aria-label={`${hidden ? 'Show' : 'Hide'} ${label}`} onClick={() => toggleHidden(id)} className={iconBtn}>
-        {hidden ? 'Show' : 'Hide'}
-      </button>
-      <button type="button" aria-label={`Remove ${label}`} onClick={() => remove(id)} className={iconBtn}>
-        ✕
-      </button>
+      <span
+        className={`flex items-center transition-opacity ${
+          selected ? 'opacity-100' : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
+        }`}
+      >
+        <button type="button" aria-label={`Move ${label} up`} onClick={() => moveBy(id, -1)} className={tool}>
+          <Icon name="up" size={14} />
+        </button>
+        <button type="button" aria-label={`Move ${label} down`} onClick={() => moveBy(id, 1)} className={tool}>
+          <Icon name="down" size={14} />
+        </button>
+        <button
+          type="button"
+          aria-label={`${hidden ? 'Show' : 'Hide'} ${label}`}
+          onClick={() => toggleHidden(id)}
+          className={tool}
+        >
+          <Icon name={hidden ? 'eyeOff' : 'eye'} size={14} />
+        </button>
+        <button type="button" aria-label={`Remove ${label}`} onClick={() => remove(id)} className={tool}>
+          <Icon name="close" size={14} />
+        </button>
+      </span>
     </li>
   )
 }
@@ -104,15 +129,16 @@ export function OutlinePanel({ report, selectedId, onSelect }: Props) {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-serif text-lg">Outline</h3>
+      <h3 className="font-serif text-xl">Outline</h3>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ol className="space-y-1.5">
+          <ol className="space-y-0.5">
             {report.sections.map(({ block, hidden }) => (
               <Row
                 key={block.id}
                 id={block.id}
                 label={sectionLabel(block, report.charts)}
+                kind={block.kind}
                 hidden={!!hidden}
                 selected={selectedId === block.id}
                 onSelect={() => scrollTo(block.id)}
@@ -128,12 +154,13 @@ export function OutlinePanel({ report, selectedId, onSelect }: Props) {
           onClick={() =>
             addSection({ id: newId('sec'), kind: 'text', heading: 'New section', body: 'Write something here.' })
           }
-          className="w-full rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-paper"
+          className="btn btn-secondary btn-sm w-full"
         >
-          + Add text section
+          <Icon name="plus" size={15} />
+          Add text section
         </button>
         {unused.length > 0 && (
-          <label className="block text-sm">
+          <label className="block">
             <span className="sr-only">Add a chart</span>
             <select
               value=""
@@ -141,7 +168,7 @@ export function OutlinePanel({ report, selectedId, onSelect }: Props) {
                 const rec = unused.find((r) => r.id === e.target.value)
                 if (rec) addChart(rec.spec)
               }}
-              className="w-full rounded-lg border border-line bg-surface px-2 py-1.5"
+              className="input w-full"
             >
               <option value="">+ Add a chart…</option>
               {unused.map((r) => (

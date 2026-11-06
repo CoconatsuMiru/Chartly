@@ -4,6 +4,7 @@ import type { ChartSpec, ReportDocument } from '@/domain'
 import { setLayoutTemplate } from '@/state/reportActions'
 import { useReportStore } from '@/state/reportStore'
 import { useSessionStore } from '@/state/sessionStore'
+import { Switch } from '../ui/Switch'
 import { LayoutPicker } from './LayoutPicker'
 import { ThemePicker } from './ThemePicker'
 
@@ -27,38 +28,24 @@ function ChartOptions({ spec }: { spec: ChartSpec }) {
   ]
 
   return (
-    <div className="space-y-3">
-      <p className="truncate text-sm font-medium" title={spec.title}>
+    <div className="space-y-4">
+      <p className="truncate text-sm font-semibold" title={spec.title}>
         {spec.title}
       </p>
       {types.length > 1 && (
-        <div role="group" aria-label="Chart type" className="flex flex-wrap gap-1">
+        <div role="group" aria-label="Chart type" className="seg flex-wrap">
           {types.map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={t === spec.type}
-              onClick={() => patchChart(spec.id, { type: t })}
-              className={`rounded-md border px-2 py-1 text-xs ${
-                t === spec.type ? 'border-primary bg-primary text-white' : 'border-line text-muted hover:bg-paper'
-              }`}
-            >
+            <button key={t} type="button" aria-pressed={t === spec.type} onClick={() => patchChart(spec.id, { type: t })}>
               {CHART_TYPE_LABEL[t]}
             </button>
           ))}
         </div>
       )}
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         {toggles.map(({ key, label }) => (
-          <label key={key} className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={!!spec.options[key]}
-              onChange={(e) => patchChart(spec.id, {}, { [key]: e.target.checked })}
-              className="size-4 accent-[var(--color-primary)]"
-            />
-            {label}
-          </label>
+          <div key={key}>
+            <Switch label={label} checked={!!spec.options[key]} onChange={(v) => patchChart(spec.id, {}, { [key]: v })} />
+          </div>
         ))}
       </div>
     </div>
@@ -73,18 +60,18 @@ export function Inspector({ report, selectedId }: Props) {
   return (
     <div className="space-y-6">
       <section>
-        <h3 className="mb-2 font-serif text-lg">Layout</h3>
+        <h3 className="mb-2.5 font-serif text-xl">Layout</h3>
         <LayoutPicker value={report.layoutTemplateId} onChange={setLayoutTemplate} />
         <p className="mt-2 text-xs text-muted">Shown in the Preview tab and used for exports.</p>
       </section>
 
-      <section>
-        <h3 className="mb-2 font-serif text-lg">Theme</h3>
+      <section className="border-t border-line pt-5">
+        <h3 className="mb-2.5 font-serif text-xl">Theme</h3>
         <ThemePicker value={report.themeId} onChange={setTheme} />
       </section>
 
-      <section>
-        <h3 className="mb-2 font-serif text-lg">Selected chart</h3>
+      <section className="border-t border-line pt-5">
+        <h3 className="mb-2.5 font-serif text-xl">Selected chart</h3>
         {chart ? (
           <ChartOptions spec={chart} />
         ) : (

@@ -14,7 +14,7 @@ export function PageCanvas({ report, theme, selectedId, onSelect }: Props) {
 
   return (
     <div
-      className="mx-auto max-w-3xl space-y-8 rounded-[var(--radius-card)] border p-10 shadow-[var(--shadow-card)]"
+      className="mx-auto max-w-3xl space-y-8 rounded-lg border p-8 shadow-[0_2px_4px_rgb(18_32_42/0.08),0_30px_60px_-24px_rgb(18_32_42/0.38)] sm:p-12"
       style={{
         background: theme.colors.paper,
         color: theme.colors.ink,
@@ -29,8 +29,8 @@ export function PageCanvas({ report, theme, selectedId, onSelect }: Props) {
           key={block.id}
           id={`sec-${block.id}`}
           onClick={() => onSelect(block.id)}
-          className={`-m-2 rounded-lg p-2 transition-shadow ${
-            selectedId === block.id ? 'ring-2 ring-[var(--color-primary)]' : ''
+          className={`-m-2 rounded-lg p-2 ring-1 transition-shadow ${
+            selectedId === block.id ? 'ring-2 ring-[var(--color-primary)]' : 'ring-transparent hover:ring-black/10'
           }`}
         >
           <BlockView block={block} report={report} theme={theme} />
@@ -38,7 +38,9 @@ export function PageCanvas({ report, theme, selectedId, onSelect }: Props) {
       ))}
       {visible.length === 0 && <p className="opacity-60">Every section is hidden. Show one from the outline.</p>}
       {hiddenCount > 0 && (
-        <p className="text-center text-xs opacity-50">{hiddenCount} hidden section(s) are not shown here or in exports.</p>
+        <p className="text-center text-xs opacity-60">
+          {hiddenCount} hidden section(s) are not shown here or in exports.
+        </p>
       )}
     </div>
   )

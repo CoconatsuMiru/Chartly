@@ -9,22 +9,17 @@ export function LoadProgress() {
   if (status !== 'loading') return null
 
   return (
-    <div role="status" className="space-y-2 rounded-lg bg-paper px-4 py-3">
+    <div role="status" className="card space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm">
-          {progress?.stage ?? 'Starting'}…{' '}
-          <span className="text-muted">{file?.name}</span>
+        <p className="min-w-0 text-sm">
+          <span className="font-semibold">{progress?.stage ?? 'Starting'}…</span>{' '}
+          <span className="truncate font-mono text-xs text-muted">{file?.name}</span>
         </p>
-        <button type="button" onClick={cancel} className="rounded-lg border border-line px-3 py-1 text-sm hover:bg-surface">
+        <button type="button" onClick={cancel} className="btn btn-secondary btn-sm">
           Cancel
         </button>
       </div>
-      <progress
-        className="h-2 w-full overflow-hidden rounded accent-[var(--color-primary)]"
-        max={1}
-        value={progress?.fraction}
-        aria-label="Loading progress"
-      />
+      <progress className="block w-full" max={1} value={progress?.fraction} aria-label="Loading progress" />
     </div>
   )
 }

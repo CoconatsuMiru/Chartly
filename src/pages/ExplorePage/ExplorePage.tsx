@@ -1,5 +1,7 @@
 import { RecommendationList } from '@/components/charts/RecommendationList'
 import { InsightFeed } from '@/components/insights/InsightFeed'
+import { Icon } from '@/components/ui/Icon'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useSessionStore } from '@/state/sessionStore'
 
 export default function ExplorePage() {
@@ -13,26 +15,29 @@ export default function ExplorePage() {
   const chartIds = new Set(result.recommendations.map((r) => r.id))
   const showChart = (id: string) => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    document
-      .getElementById(`chart-${id}`)
-      ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    document.getElementById(`chart-${id}`)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
   }
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h2 className="font-serif text-3xl">Explore</h2>
-        <p className="mt-1 text-muted">
-          Chartly found {result.insights.length} finding(s) and {result.recommendations.length} chart
-          suggestion(s) in {result.source.fileName}. Tick the charts you want in your report.
-        </p>
-      </header>
+    <div>
+      <PageHeader
+        eyebrow="Stage 2 · Explore"
+        title={
+          <>
+            Explore the <em>story</em>
+          </>
+        }
+        description={`Chartly found ${result.insights.length} finding(s) and ${result.recommendations.length} chart suggestion(s) in ${result.source.fileName}. Switch on the charts you want in your report.`}
+      />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section aria-labelledby="charts-heading">
-          <h3 id="charts-heading" className="mb-3 font-serif text-xl">
-            Chart workbench
-          </h3>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 id="charts-heading" className="font-serif text-2xl">
+              Chart workbench
+            </h3>
+            <span className="chip chip-neutral">{result.recommendations.length} suggested</span>
+          </div>
           <RecommendationList
             items={result.recommendations}
             columns={result.columns}
@@ -43,34 +48,36 @@ export default function ExplorePage() {
 
         <aside
           aria-labelledby="findings-heading"
-          className="xl:sticky xl:top-8 xl:max-h-[calc(100vh-4rem)] xl:self-start xl:overflow-auto"
+          className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-auto xl:pr-1"
         >
-          <h3 id="findings-heading" className="mb-3 font-serif text-xl">
-            Findings
-          </h3>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h3 id="findings-heading" className="font-serif text-2xl">
+              Findings
+            </h3>
+            <span className="chip chip-neutral">{result.insights.length}</span>
+          </div>
           <InsightFeed insights={result.insights} chartIds={chartIds} onShowChart={showChart} />
         </aside>
       </div>
 
-      <div className="sticky bottom-4 flex items-center justify-between gap-4 rounded-[var(--radius-card)] border border-line bg-surface px-5 py-3 shadow-[var(--shadow-card)]">
-        <p className="text-sm">
-          <span className="font-medium">{selected.length}</span> chart{selected.length === 1 ? '' : 's'} selected for
-          the report
-        </p>
+      <div className="glass sticky bottom-4 z-10 mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <span className="bg-brand-grad grid size-9 place-items-center rounded-full text-sm font-bold text-white tabular-nums">
+            {selected.length}
+          </span>
+          <p className="text-sm">
+            <span className="font-semibold">chart{selected.length === 1 ? '' : 's'} selected</span>{' '}
+            <span className="text-ink-soft">for the report</span>
+          </p>
+        </div>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setStage('import')}
-            className="rounded-lg border border-line px-4 py-2 text-sm hover:bg-paper"
-          >
+          <button type="button" onClick={() => setStage('import')} className="btn btn-secondary">
+            <Icon name="arrowLeft" size={16} />
             Back to data
           </button>
-          <button
-            type="button"
-            onClick={() => setStage('compose')}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-          >
+          <button type="button" onClick={() => setStage('compose')} className="btn btn-primary">
             Continue to Compose
+            <Icon name="arrowRight" size={16} />
           </button>
         </div>
       </div>

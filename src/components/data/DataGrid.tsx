@@ -5,8 +5,8 @@ import { getDataWorker } from '@/workers/workerClient'
 import { TypeBadge } from './TypeBadge'
 
 const PAGE = 100
-const ROW_H = 32
-const COL_W = 168
+const ROW_H = 36
+const COL_W = 176
 
 interface Props {
   columns: ColumnMeta[]
@@ -54,18 +54,22 @@ export function DataGrid({ columns, rowCount }: Props) {
       aria-label="Data preview"
       aria-rowcount={rowCount + 1}
       tabIndex={0}
-      className="h-105 overflow-auto rounded-lg border border-line bg-surface"
+      className="card h-[440px] overflow-auto"
     >
       <div style={{ minWidth, width: '100%' }}>
         <div
           role="row"
           aria-rowindex={1}
-          className="sticky top-0 z-10 grid border-b border-line bg-paper"
+          className="sticky top-0 z-10 grid border-b border-line bg-[#faf8f2]"
           style={{ gridTemplateColumns: template }}
         >
           {columns.map((c) => (
-            <div key={c.id} role="columnheader" className="flex flex-col gap-1 px-3 py-2">
-              <span className="truncate text-sm font-medium" title={c.name}>
+            <div
+              key={c.id}
+              role="columnheader"
+              className={`flex flex-col gap-1.5 px-4 py-3 ${c.type === 'number' ? 'items-end' : 'items-start'}`}
+            >
+              <span className="max-w-full truncate text-sm font-semibold" title={c.name}>
                 {c.name}
               </span>
               <TypeBadge column={c} />
@@ -81,7 +85,7 @@ export function DataGrid({ columns, rowCount }: Props) {
                 key={v.key}
                 role="row"
                 aria-rowindex={v.index + 2}
-                className="grid border-b border-line font-mono text-xs"
+                className="grid border-b border-line/70 text-[13px] transition-colors hover:bg-primary-soft/40"
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -96,7 +100,7 @@ export function DataGrid({ columns, rowCount }: Props) {
                   <div
                     key={c.id}
                     role="cell"
-                    className={`truncate px-3 py-2 ${c.type === 'number' ? 'text-right' : ''}`}
+                    className={`truncate px-4 py-2 ${c.type === 'number' ? 'text-right font-mono tabular-nums' : ''}`}
                   >
                     {row ? (row[ci] ?? '') : <span className="text-muted" aria-hidden="true">···</span>}
                   </div>
