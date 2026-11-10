@@ -24,7 +24,7 @@ interface Props {
 export function InsightFeed({ insights, chartIds, onShowChart }: Props) {
   if (insights.length === 0) {
     return (
-      <div className="card p-6 text-center">
+      <div className="card p-8 text-center">
         <p className="font-serif text-lg">Nothing stands out</p>
         <p className="mt-1 text-sm text-muted">No notable findings for this file yet.</p>
       </div>
@@ -32,15 +32,15 @@ export function InsightFeed({ insights, chartIds, onShowChart }: Props) {
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-4">
       {insights.map((i, idx) => {
         const tone = KIND[i.kind]
         const chartId = i.suggestedChartId
         const canShow = !!chartId && !!onShowChart && !!chartIds?.has(chartId)
         return (
-          <li key={i.id} className="card rise relative overflow-hidden p-4 pl-5" style={stagger(idx)}>
-            <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ background: tone.rail }} />
-            <div className="flex flex-wrap items-center gap-2">
+          <li key={i.id} className="card rise relative overflow-hidden p-5 pl-6" style={stagger(idx)}>
+            <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px]" style={{ background: tone.rail }} />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide"
                 style={{ background: tone.bg, color: tone.fg }}
@@ -50,16 +50,16 @@ export function InsightFeed({ insights, chartIds, onShowChart }: Props) {
               </span>
               <span className="text-xs text-muted">{i.confidence} confidence</span>
             </div>
-            <h4 className="mt-2 font-serif text-[1.1rem] leading-snug">{i.title}</h4>
-            <p className="mt-1 text-sm leading-relaxed text-ink-soft">{i.narrative}</p>
+            <h4 className="mt-3 font-serif text-[1.1rem] leading-snug">{i.title}</h4>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{i.narrative}</p>
 
-            <div className="mt-3 flex items-start justify-between gap-2">
+            <div className="mt-4 flex items-start justify-between gap-2">
               <details className="group min-w-0 text-xs text-muted">
                 <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-md py-1 font-semibold text-ink-soft hover:text-ink [&::-webkit-details-marker]:hidden">
                   Why this?
                   <Icon name="chevron" size={14} className="transition-transform group-open:rotate-180" />
                 </summary>
-                <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg bg-[#faf8f2] p-3 font-mono ring-1 ring-black/5">
+                <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 rounded-lg bg-[#faf8f2] p-3.5 font-mono ring-1 ring-black/5">
                   {i.evidence.map((e) => (
                     <div key={e.label} className="contents">
                       <dt>{e.label}</dt>

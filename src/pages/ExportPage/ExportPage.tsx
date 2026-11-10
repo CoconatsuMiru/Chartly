@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PlanPage } from '@/components/report/PlanPage'
+import { Icon, type IconName } from '@/components/ui/Icon'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { exportReport } from '@/core/export/exportService'
 import { runPreflight, type CheckLevel } from '@/core/export/preflight'
 import type { ChartMode, ExportFormat } from '@/core/export/types'
@@ -9,25 +11,33 @@ import { ChartlyError, type Progress } from '@/domain'
 import { useReportPlan } from '@/hooks/useReportPlan'
 import { useReportStore } from '@/state/reportStore'
 import { useSessionStore } from '@/state/sessionStore'
+import { getTheme } from '@/themes/builtin'
 import { downloadBlob } from '@/utils/download'
 import { formatBytes } from '@/utils/format'
 import { getDataWorker } from '@/workers/workerClient'
 
-const THUMB_HEIGHT = 200
+const THUMB_HEIGHT = 240
 
-const FORMATS: { id: ExportFormat; name: string; blurb: string }[] = [
-  { id: 'pdf', name: 'PDF document', blurb: 'Selectable text and sharp charts. Best for sharing and printing.' },
-  { id: 'pptx', name: 'PowerPoint', blurb: 'Editable slides, with real PowerPoint charts where possible.' },
+const FORMATS: { id: ExportFormat; name: string; blurb: string; icon: IconName }[] = [
+  { id: 'pdf', name: 'PDF document', blurb: 'Selectable text and sharp charts. Best for sharing and printing.', icon: 'file' },
+  { id: 'pptx', name: 'PowerPoint', blurb: 'Editable slides, with real PowerPoint charts where possible.', icon: 'slides' },
 ]
 
-const LEVEL: Record<CheckLevel, { label: string; cls: string }> = {
-  error: { label: 'Problem', cls: 'bg-danger/10 text-danger' },
-  warn: { label: 'Check', cls: 'bg-accent-soft text-accent-ink' },
-  info: { label: 'Note', cls: 'bg-paper text-muted ring-1 ring-line' },
-  ok: { label: 'Ready', cls: 'bg-primary-soft text-primary' },
+const LEVEL: Record<CheckLevel, { label: string; icon: IconName; cls: string }> = {
+  error: { label: 'Problem', icon: 'close', cls: 'bg-danger text-white' },
+  warn: { label: 'Check', icon: 'alert', cls: 'bg-accent-soft text-accent-ink ring-1 ring-accent/40' },
+  info: { label: 'Note', icon: 'info', cls: 'bg-black/8 text-ink-soft' },
+  ok: { label: 'Ready', icon: 'check', cls: 'bg-primary text-white' },
 }
 
 type Message = { kind: 'ok' | 'error'; text: string }
+
+const optionCls = (on: boolean) =>
+  `relative rounded-2xl border p-4 text-left transition-colors ${
+    on
+      ? 'border-primary bg-primary-soft shadow-[0_0_0_1px_var(--color-primary)]'
+      : 'border-line bg-surface hover:border-primary/40 hover:shadow-lift'
+  }`
 
 export default function ExportPage() {
   const report = useReportStore((s) => s.report)
@@ -45,16 +55,16 @@ export default function ExportPage() {
 
   if (!report) {
     return (
-      <div className="space-y-3">
-        <p className="text-muted">There is no report to export yet.</p>
-        <button type="button" onClick={() => setStage('compose')} className="rounded-lg border border-line px-4 py-2 text-sm hover:bg-paper">
+      <div className="card max-w-xl space-y-4 p-8">
+        <p className="font-serif text-xl">There is no report to export yet.</p>
+        <button type="button" onClick={() => setStage('compose')} className="btn btn-secondary">
           Go to Compose
         </button>
       </div>
     )
   }
 
-  const layoutName = getTemplate(report.layoutTemplateId).name
+  const template = getTemplate(report.layoutTemplateId)
   const label = format === 'pdf' ? 'PDF' : 'PowerPoint'
 
   async function run() {
@@ -83,52 +93,59 @@ export default function ExportPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-serif text-3xl">Export</h2>
-          <p className="mt-1 text-muted">
-            {layoutName}. To change the layout or theme, go back to Compose.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setStage('compose')}
-          className="rounded-lg border border-line px-4 py-2 text-sm hover:bg-paper"
-        >
-          Back to Compose
-        </button>
-      </header>
+    <div>
+      <PageHeader
+        eyebrow="Stage 4 · Export"
+        title={
+          <>
+            Export your <em>report</em>
+          </>
+        }
+        description="Check the pages, pick a format and download. Everything is built in this browser tab."
+        actions={
+          <button type="button" onClick={() => setStage('compose')} className="btn btn-secondary">
+            <Icon name="arrowLeft" size={16} />
+            Back to Compose
+          </button>
+        }
+      />
 
-      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_400px]">
-        <section aria-labelledby="pages-heading" className="min-w-0">
-          <h3 id="pages-heading" className="mb-3 font-serif text-xl">
-            {plan?.format === 'deck' ? 'Slides' : 'Pages'}
-          </h3>
+      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_390px]">
+        <section aria-labelledby="pages-heading" className="desk min-w-0 rounded-[22px] p-6 sm:p-8">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h3 id="pages-heading" className="font-serif text-2xl">
+              {plan?.format === 'deck' ? 'Slides' : 'Pages'}
+            </h3>
+            <p className="text-sm text-ink-soft">
+              {plan ? `${plan.pages.length} · ` : ''}
+              {template.name} · {getTheme(report.themeId).name} theme
+            </p>
+          </div>
+
           {plan ? (
             <ol
               aria-label={plan.format === 'deck' ? 'Slides' : 'Pages'}
               tabIndex={0}
-              className="flex gap-4 overflow-x-auto pb-3"
+              className="flex gap-6 overflow-x-auto pb-4"
             >
               {plan.pages.map((_, i) => (
-                <li key={i} className="shrink-0 space-y-1">
+                <li key={i} className="shrink-0 space-y-2.5">
                   <PlanPage plan={plan} index={i} report={report} scale={THUMB_HEIGHT / (plan.page.height * PX_PER_PT)} />
-                  <p className="text-center text-xs text-muted">{i + 1}</p>
+                  <p className="text-center font-mono text-xs text-ink-soft">{i + 1}</p>
                 </li>
               ))}
             </ol>
           ) : (
-            <p role="status" className="text-sm text-muted">
+            <p role="status" className="text-sm text-ink-soft">
               Laying out pages…
             </p>
           )}
         </section>
 
-        <aside className="space-y-6" aria-label="Export settings">
+        <aside className="card space-y-7 p-6" aria-label="Export settings">
           <section>
-            <h3 className="mb-2 font-serif text-xl">Format</h3>
-            <div role="radiogroup" aria-label="File format" className="space-y-2">
+            <h3 className="mb-3 font-serif text-xl">Format</h3>
+            <div role="radiogroup" aria-label="File format" className="grid grid-cols-2 gap-3">
               {FORMATS.map((f) => (
                 <button
                   key={f.id}
@@ -137,21 +154,32 @@ export default function ExportPage() {
                   aria-checked={format === f.id}
                   disabled={busy}
                   onClick={() => setFormat(f.id)}
-                  className={`w-full rounded-lg border px-4 py-3 text-left transition-colors ${
-                    format === f.id ? 'border-primary bg-primary-soft' : 'border-line hover:bg-paper'
-                  }`}
+                  className={`flex flex-col gap-3 ${optionCls(format === f.id)}`}
                 >
-                  <span className="block text-sm font-medium">{f.name}</span>
-                  <span className="block text-xs text-muted">{f.blurb}</span>
+                  <span className="bg-brand-grad grid size-10 place-items-center rounded-xl text-white">
+                    <Icon name={f.icon} size={20} />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold">{f.name}</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-ink-soft">{f.blurb}</span>
+                  </span>
+                  {format === f.id && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-3 top-3 grid size-5 place-items-center rounded-full bg-primary text-white"
+                    >
+                      <Icon name="check" size={12} />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
           </section>
 
           {format === 'pptx' && (
-            <section>
-              <h3 className="mb-2 font-serif text-xl">Charts in PowerPoint</h3>
-              <div role="radiogroup" aria-label="Chart type in PowerPoint" className="space-y-2">
+            <section className="border-t border-line pt-6">
+              <h3 className="mb-3 font-serif text-xl">Charts in PowerPoint</h3>
+              <div role="radiogroup" aria-label="Chart type in PowerPoint" className="space-y-3">
                 {(
                   [
                     ['native', 'Editable PowerPoint charts', 'Right-click a chart to edit its data. Charts with gaps, trend lines or grouped points use images instead.'],
@@ -165,30 +193,31 @@ export default function ExportPage() {
                     aria-checked={chartMode === id}
                     disabled={busy}
                     onClick={() => setChartMode(id)}
-                    className={`w-full rounded-lg border px-4 py-3 text-left transition-colors ${
-                      chartMode === id ? 'border-primary bg-primary-soft' : 'border-line hover:bg-paper'
-                    }`}
+                    className={`block w-full ${optionCls(chartMode === id)}`}
                   >
-                    <span className="block text-sm font-medium">{name}</span>
-                    <span className="block text-xs text-muted">{blurb}</span>
+                    <span className="block text-sm font-semibold">{name}</span>
+                    <span className="mt-1 block text-xs leading-relaxed text-ink-soft">{blurb}</span>
                   </button>
                 ))}
               </div>
             </section>
           )}
 
-          <section aria-labelledby="preflight-heading">
-            <h3 id="preflight-heading" className="mb-2 font-serif text-xl">
+          <section aria-labelledby="preflight-heading" className="border-t border-line pt-6">
+            <h3 id="preflight-heading" className="mb-3 font-serif text-xl">
               Before you export
             </h3>
             {plan ? (
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {checks.map((c) => (
-                  <li key={c.id} className="flex items-start gap-2 text-sm">
-                    <span className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium ${LEVEL[c.level].cls}`}>
+                  <li key={c.id} className="flex items-start gap-3 text-sm">
+                    <span
+                      className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${LEVEL[c.level].cls}`}
+                    >
+                      <Icon name={LEVEL[c.level].icon} size={11} />
                       {LEVEL[c.level].label}
                     </span>
-                    <span>{c.message}</span>
+                    <span className="leading-snug">{c.message}</span>
                   </li>
                 ))}
               </ul>
@@ -197,35 +226,32 @@ export default function ExportPage() {
             )}
           </section>
 
-          <section className="space-y-3">
+          <section className="space-y-4 border-t border-line pt-6">
             <button
               type="button"
               onClick={run}
               disabled={!plan || busy || blocked}
-              className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+              className="btn btn-primary w-full py-3.5 text-[15px]"
             >
+              <Icon name="download" size={18} />
               {busy ? `Creating ${label}…` : `Download ${label}`}
             </button>
 
             {busy && progress && (
-              <div role="status" className="space-y-1">
-                <p className="text-sm text-muted">{progress.stage}</p>
-                <progress
-                  className="h-2 w-full overflow-hidden rounded accent-[var(--color-primary)]"
-                  max={1}
-                  value={progress.fraction}
-                  aria-label="Export progress"
-                />
+              <div role="status" className="space-y-2">
+                <p className="text-sm text-ink-soft">{progress.stage}</p>
+                <progress className="block w-full" max={1} value={progress.fraction} aria-label="Export progress" />
               </div>
             )}
 
             {message && (
               <p
                 role={message.kind === 'error' ? 'alert' : 'status'}
-                className={`rounded-lg px-4 py-3 text-sm ${
-                  message.kind === 'error' ? 'bg-danger/10 text-danger' : 'bg-primary-soft text-primary'
+                className={`flex items-start gap-2 rounded-xl px-4 py-3 text-sm ${
+                  message.kind === 'error' ? 'bg-danger/10 text-danger' : 'bg-primary-soft text-primary-strong'
                 }`}
               >
+                <Icon name={message.kind === 'error' ? 'alert' : 'check'} size={16} className="mt-0.5 shrink-0" />
                 {message.text}
               </p>
             )}

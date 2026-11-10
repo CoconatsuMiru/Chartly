@@ -44,40 +44,37 @@ export function ChartCard({ spec, columns, theme = THEMES[0], footer, selected }
 
   return (
     <article
-      className={`card relative overflow-hidden p-5 transition-shadow ${
-        selected ? 'ring-2 ring-primary/45' : ''
-      }`}
+      className={`card relative overflow-hidden p-6 transition-shadow ${selected ? 'ring-2 ring-primary/40' : ''}`}
     >
       {selected && <span aria-hidden="true" className="bg-brand-bar absolute inset-x-0 top-0 h-[3px]" />}
 
-      <header className="flex flex-wrap items-start justify-between gap-3">
+      <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h4 className="font-serif text-[1.2rem] leading-snug">{spec.title}</h4>
-          {spec.subtitle && <p className="mt-0.5 text-xs text-muted">{spec.subtitle}</p>}
+          <h4 className="font-serif text-[1.25rem] leading-snug">{spec.title}</h4>
+          {spec.subtitle && <p className="mt-1 text-xs text-muted">{spec.subtitle}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          {types.length > 1 && (
-            <div role="group" aria-label="Chart type" className="seg">
-              {types.map((t) => (
-                <button key={t} type="button" aria-pressed={t === type} onClick={() => setType(t)}>
-                  {CHART_TYPE_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          )}
-          <button
-            type="button"
-            aria-pressed={asTable}
-            onClick={() => setAsTable((v) => !v)}
-            className={`btn btn-ghost btn-sm ${asTable ? 'bg-primary-soft text-primary-strong' : ''}`}
-          >
-            <Icon name="table" size={15} />
-            Table
-          </button>
-        </div>
+        <button
+          type="button"
+          aria-pressed={asTable}
+          onClick={() => setAsTable((v) => !v)}
+          className={`btn btn-ghost btn-sm shrink-0 ${asTable ? 'bg-primary-soft text-primary-strong' : ''}`}
+        >
+          <Icon name="table" size={15} />
+          Table
+        </button>
       </header>
 
-      <div className="mt-4">
+      {types.length > 1 && (
+        <div role="group" aria-label="Chart type" className="seg mt-4">
+          {types.map((t) => (
+            <button key={t} type="button" aria-pressed={t === type} onClick={() => setType(t)}>
+              {CHART_TYPE_LABEL[t]}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-5">
         {error ? (
           <p role="alert" className="text-sm text-danger">
             {error}
@@ -95,13 +92,13 @@ export function ChartCard({ spec, columns, theme = THEMES[0], footer, selected }
       </div>
 
       {notes.length > 0 && (
-        <ul className="mt-2 space-y-0.5 text-xs text-muted">
+        <ul className="mt-3 space-y-0.5 text-xs text-muted">
           {notes.map((n, i) => (
             <li key={i}>{n}</li>
           ))}
         </ul>
       )}
-      {footer && <div className="mt-4 border-t border-line pt-3.5">{footer}</div>}
+      {footer && <div className="mt-5 border-t border-line pt-4">{footer}</div>}
     </article>
   )
 }

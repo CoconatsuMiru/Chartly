@@ -30,14 +30,11 @@ export default function ExplorePage() {
         description={`Chartly found ${result.insights.length} finding(s) and ${result.recommendations.length} chart suggestion(s) in ${result.source.fileName}. Switch on the charts you want in your report.`}
       />
 
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section aria-labelledby="charts-heading">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 id="charts-heading" className="font-serif text-2xl">
-              Chart workbench
-            </h3>
-            <span className="chip chip-neutral">{result.recommendations.length} suggested</span>
-          </div>
+          <h3 id="charts-heading" className="mb-5 font-serif text-2xl">
+            Chart workbench
+          </h3>
           <RecommendationList
             items={result.recommendations}
             columns={result.columns}
@@ -48,21 +45,18 @@ export default function ExplorePage() {
 
         <aside
           aria-labelledby="findings-heading"
-          className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start xl:overflow-auto xl:pr-1"
+          className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-9rem)] xl:self-start xl:overflow-auto xl:pr-1"
         >
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 id="findings-heading" className="font-serif text-2xl">
-              Findings
-            </h3>
-            <span className="chip chip-neutral">{result.insights.length}</span>
-          </div>
+          <h3 id="findings-heading" className="mb-5 font-serif text-2xl">
+            Findings
+          </h3>
           <InsightFeed insights={result.insights} chartIds={chartIds} onShowChart={showChart} />
         </aside>
       </div>
 
-      <div className="glass sticky bottom-4 z-10 mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-5 py-3.5">
+      <div className="glass sticky bottom-5 z-10 mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-6 py-4">
         <div className="flex items-center gap-3">
-          <span className="bg-brand-grad grid size-9 place-items-center rounded-full text-sm font-bold text-white tabular-nums">
+          <span className="bg-brand-grad grid size-9 place-items-center rounded-full text-sm font-bold tabular-nums text-white">
             {selected.length}
           </span>
           <p className="text-sm">
@@ -70,7 +64,7 @@ export default function ExplorePage() {
             <span className="text-ink-soft">for the report</span>
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button type="button" onClick={() => setStage('import')} className="btn btn-secondary">
             <Icon name="arrowLeft" size={16} />
             Back to data

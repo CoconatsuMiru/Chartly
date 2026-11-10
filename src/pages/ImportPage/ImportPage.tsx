@@ -16,10 +16,10 @@ import type { LoadResult } from '@/workers/protocol'
 
 const iso = (ts: number) => new Date(ts).toISOString().slice(0, 10)
 
-const FEATURES: { icon: IconName; title: string; text: string }[] = [
+const STEPS: { icon: IconName; title: string; text: string }[] = [
   { icon: 'sheet', title: 'Reads messy files', text: 'Finds the real header row, drops total rows, and understands currencies, percentages and dates.' },
-  { icon: 'spark', title: 'Finds the story', text: 'Trends, changes, correlations and outliers, each with the numbers behind it. No guesswork.' },
-  { icon: 'bars', title: 'Draws the charts', text: 'Picks chart types that fit your columns, and lets you switch or tweak any of them.' },
+  { icon: 'spark', title: 'Finds the story', text: 'Trends, changes, correlations and outliers, each with the numbers behind it.' },
+  { icon: 'bars', title: 'Draws the charts', text: 'Picks chart types that fit your columns. Switch or tweak any of them.' },
   { icon: 'download', title: 'Exports in one click', text: 'A paginated PDF or a PowerPoint with editable charts, checked before you download.' },
 ]
 
@@ -67,7 +67,7 @@ export default function ImportPage() {
     for (const c of result.columns) typeCounts.set(c.type, (typeCounts.get(c.type) ?? 0) + 1)
 
     return (
-      <div className="space-y-7">
+      <div>
         <PageHeader
           eyebrow="Stage 1 · Import"
           title={
@@ -84,104 +84,83 @@ export default function ImportPage() {
           }
         />
 
-        <LoadProgress />
-        {error && (
-          <p role="alert" className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
-            {error}
-          </p>
-        )}
-
-        <section className="card flex flex-wrap items-center gap-x-6 gap-y-3 p-4 sm:p-5">
-          <span className="bg-brand-soft grid size-12 shrink-0 place-items-center rounded-2xl text-primary">
-            <Icon name="sheet" size={24} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-mono text-[15px] font-medium">{result.source.fileName}</p>
-            <p className="mt-0.5 text-xs text-muted">
-              {formatBytes(result.source.fileSize)} · {result.source.format.toUpperCase()} · read in {result.parseMs} ms
+        <div className="space-y-8">
+          <LoadProgress />
+          {error && (
+            <p role="alert" className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+              {error}
             </p>
-          </div>
-          {result.sheets.length > 1 && file && (
-            <label className="flex items-center gap-2 text-sm">
-              Sheet
-              <select
-                value={result.source.sheetName}
-                onChange={(e) => loadFile(file, e.target.value)}
-                className="input"
-              >
-                {result.sheets.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
           )}
-          <DropZone compact onFile={(f) => loadFile(f)} disabled={loading} />
-        </section>
 
-        <KpiRow result={result} />
+          <section className="card flex flex-wrap items-center gap-x-6 gap-y-4 p-5 sm:p-6">
+            <span className="bg-brand-soft grid size-12 shrink-0 place-items-center rounded-2xl text-primary">
+              <Icon name="sheet" size={24} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-mono text-[15px] font-medium">{result.source.fileName}</p>
+              <p className="mt-1 text-xs text-muted">
+                {formatBytes(result.source.fileSize)} · {result.source.format.toUpperCase()} · read in {result.parseMs} ms
+              </p>
+            </div>
+            {result.sheets.length > 1 && file && (
+              <label className="flex items-center gap-2 text-sm">
+                Sheet
+                <select
+                  value={result.source.sheetName}
+                  onChange={(e) => loadFile(file, e.target.value)}
+                  className="input"
+                >
+                  {result.sheets.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <DropZone compact onFile={(f) => loadFile(f)} disabled={loading} />
+          </section>
 
-        <DataHealth warnings={result.source.parseWarnings} duplicateRows={result.profile.duplicateRowCount} />
+          <KpiRow result={result} />
 
-        <section>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-serif text-2xl">Data preview</h3>
-            <p className="flex flex-wrap gap-1.5">
-              {[...typeCounts].map(([type, n]) => (
-                <span key={type} className="chip chip-neutral">
-                  {n} {TYPE_NAME[type]}
-                </span>
-              ))}
-            </p>
-          </div>
-          <DataGrid key={result.datasetId} columns={result.columns} rowCount={result.rowCount} />
-        </section>
+          <DataHealth warnings={result.source.parseWarnings} duplicateRows={result.profile.duplicateRowCount} />
+
+          <section>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-serif text-2xl">Data preview</h3>
+              <p className="flex flex-wrap gap-1.5">
+                {[...typeCounts].map(([type, n]) => (
+                  <span key={type} className="chip chip-neutral">
+                    {n} {TYPE_NAME[type]}
+                  </span>
+                ))}
+              </p>
+            </div>
+            <DataGrid key={result.datasetId} columns={result.columns} rowCount={result.rowCount} />
+          </section>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-16">
-      <section className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+    <div className="space-y-20 pt-2 lg:space-y-24">
+      <section className="grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-16">
         <div className="rise">
           <p className="chip">
             <Icon name="lock" size={13} />
             Private by design
           </p>
-          <h2 className="display mt-5 text-[2.7rem] leading-[1.02] sm:text-[3.7rem]">
+          <h2 className="display mt-6 text-[2.5rem] sm:text-[3.2rem]">
             Turn raw spreadsheets into <em className="mark-amber">finished reports.</em>
           </h2>
-          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-ink-soft">
+          <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft">
             Drop in an Excel or CSV file. Chartly cleans it up, finds what matters, and drafts a report you can edit,
             then export to PDF or PowerPoint.
           </p>
-
-          <div className="mt-8 space-y-4">
-            <LoadProgress />
-            {error && (
-              <p role="alert" className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
-                {error}
-              </p>
-            )}
-            <DropZone onFile={(f) => loadFile(f)} disabled={loading} />
-            <div className="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
-              No file handy?
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => loadFile(makeSampleFile())}
-                className="btn btn-secondary btn-sm"
-              >
-                <Icon name="spark" size={15} />
-                Try the sample data
-              </button>
-            </div>
-          </div>
-
-          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-soft">
+          <ul className="mt-8 space-y-2.5 text-sm text-ink-soft">
             {TRUST.map((t) => (
-              <li key={t.text} className="flex items-center gap-2">
+              <li key={t.text} className="flex items-center gap-2.5">
                 <Icon name={t.icon} size={15} className="text-primary" />
                 {t.text}
               </li>
@@ -189,27 +168,55 @@ export default function ImportPage() {
           </ul>
         </div>
 
-        <div className="rise" style={stagger(2)}>
-          <HeroPreview />
+        <div className="rise space-y-4" style={stagger(1)}>
+          <LoadProgress />
+          {error && (
+            <p role="alert" className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+              {error}
+            </p>
+          )}
+          <DropZone onFile={(f) => loadFile(f)} disabled={loading} />
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-ink-soft">
+            No file handy?
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => loadFile(makeSampleFile())}
+              className="btn btn-secondary btn-sm"
+            >
+              <Icon name="spark" size={15} />
+              Try the sample data
+            </button>
+          </div>
         </div>
       </section>
 
-      <section aria-labelledby="how-heading">
-        <h2 id="how-heading" className="eyebrow">
-          What happens to your file
-        </h2>
-        <ol className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {FEATURES.map((f, i) => (
-            <li key={f.title} className="card card-hover rise relative p-5" style={stagger(i + 2)}>
-              <span className="absolute right-5 top-5 font-mono text-xs text-muted">0{i + 1}</span>
-              <span className="bg-brand-soft grid size-10 place-items-center rounded-xl text-primary">
-                <Icon name={f.icon} size={20} />
-              </span>
-              <h3 className="mt-4 font-serif text-lg">{f.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{f.text}</p>
-            </li>
-          ))}
-        </ol>
+      <section
+        aria-labelledby="how-heading"
+        className="grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-16"
+      >
+        <div className="rise mx-auto w-full max-w-[440px]" style={stagger(2)}>
+          <HeroPreview />
+        </div>
+        <div>
+          <p className="eyebrow">What happens to your file</p>
+          <h2 id="how-heading" className="display mt-3 text-[2rem]">
+            From messy rows to a finished report
+          </h2>
+          <ol className="mt-8 divide-y divide-line">
+            {STEPS.map((s) => (
+              <li key={s.title} className="flex gap-4 py-5 first:pt-0 last:pb-0">
+                <span className="bg-brand-soft grid size-11 shrink-0 place-items-center rounded-xl text-primary">
+                  <Icon name={s.icon} size={20} />
+                </span>
+                <div>
+                  <h3 className="font-serif text-lg leading-snug">{s.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{s.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
     </div>
   )
@@ -222,7 +229,7 @@ function KpiRow({ result }: { result: LoadResult }) {
   const range = dateRange(result)
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       <KpiTile icon="rows" label="Rows" value={result.rowCount.toLocaleString('en-US')} />
       <KpiTile icon="columns" label="Columns" value={String(result.columns.length)} />
       <KpiTile

@@ -70,57 +70,57 @@ export function DropZone({ onFile, disabled, compact }: Props) {
     <label
       htmlFor={inputId}
       {...handlers}
-      className={`group relative block cursor-pointer rounded-[24px] p-px transition-transform duration-200 focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary ${
-        dragging ? 'scale-[1.012]' : ''
+      className={`group relative block cursor-pointer rounded-[22px] p-px transition-transform duration-200 focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary ${
+        dragging ? 'scale-[1.01]' : ''
       } ${disabled ? 'pointer-events-none opacity-60' : ''}`}
     >
       {input}
       <span
         aria-hidden="true"
-        className={`absolute inset-0 rounded-[24px] bg-[linear-gradient(135deg,#1aa7a0,#e0951a)] transition-opacity duration-300 ${
-          dragging ? 'opacity-100' : 'opacity-25 group-hover:opacity-100'
+        className={`absolute inset-0 rounded-[22px] bg-[linear-gradient(135deg,#1aa7a0,#e0951a)] transition-opacity duration-300 ${
+          dragging ? 'opacity-100' : 'opacity-20 group-hover:opacity-90'
         }`}
       />
       <span
-        className={`relative flex flex-col gap-6 overflow-hidden rounded-[23px] px-6 py-7 shadow-[var(--shadow-lift)] sm:flex-row sm:items-center sm:px-8 sm:py-8 ${
+        className={`relative flex flex-col items-center overflow-hidden rounded-[21px] px-6 py-10 text-center shadow-[var(--shadow-card)] sm:px-10 sm:py-12 ${
           dragging ? 'bg-primary-soft' : 'bg-surface'
         }`}
       >
         <span
           aria-hidden="true"
-          className="dots pointer-events-none absolute inset-y-0 right-0 w-1/2 [mask-image:linear-gradient(to_left,black,transparent)]"
+          className="dots pointer-events-none absolute inset-x-0 top-0 h-1/2 [mask-image:linear-gradient(to_bottom,black,transparent)]"
         />
 
         <span
           aria-hidden="true"
-          className="bg-brand-grad relative grid size-[76px] shrink-0 place-items-center rounded-[22px] text-white shadow-[0_12px_24px_-10px_rgb(8_74_77/0.7)]"
+          className="bg-brand-grad relative grid size-[68px] place-items-center rounded-[20px] text-white shadow-[0_12px_24px_-12px_rgb(8_74_77/0.7)]"
         >
-          <Icon name="sheet" size={34} />
-          <span className="absolute -bottom-2 -right-2 grid size-8 place-items-center rounded-full bg-accent text-night ring-4 ring-surface transition-transform duration-200 group-hover:-translate-y-1">
-            <Icon name="upload" size={16} />
+          <Icon name="sheet" size={30} />
+          <span className="absolute -bottom-2 -right-2 grid size-7 place-items-center rounded-full bg-accent text-night ring-4 ring-surface transition-transform duration-200 group-hover:-translate-y-0.5">
+            <Icon name="upload" size={14} />
           </span>
         </span>
 
-        <span className="relative block min-w-0 flex-1">
-          <span className="display block text-[1.75rem]">
-            {dragging ? 'Release to analyse it' : 'Drop a spreadsheet here'}
-          </span>
-          <span className="mt-1.5 block text-sm leading-relaxed text-ink-soft">
-            or click to browse. Merged titles, total rows and mixed date formats are fine.
-          </span>
-          <span className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="btn btn-primary">Browse files</span>
-            {FORMATS.map((f) => (
-              <span key={f.ext} className="file-tag">
-                <span className="size-1.5 rounded-full" style={{ background: f.dot }} />
-                {f.ext}
-              </span>
-            ))}
-          </span>
-          <span className="mt-4 flex items-center gap-2 text-xs text-muted">
-            <Icon name="lock" size={13} />
-            Read in this tab, never uploaded · up to 50 MB and 500,000 rows
-          </span>
+        <span className="display relative mt-7 block text-[1.6rem]">
+          {dragging ? 'Release to analyse it' : 'Drop a spreadsheet here'}
+        </span>
+        <span className="relative mt-2 block max-w-sm text-sm leading-relaxed text-ink-soft">
+          or click to browse. Merged titles, total rows and mixed date formats are fine.
+        </span>
+
+        <span className="btn btn-primary relative mt-6">Browse files</span>
+
+        <span className="relative mt-6 flex flex-wrap items-center justify-center gap-2">
+          {FORMATS.map((f) => (
+            <span key={f.ext} className="file-tag">
+              <span className="size-1.5 rounded-full" style={{ background: f.dot }} />
+              {f.ext}
+            </span>
+          ))}
+        </span>
+        <span className="relative mt-4 flex items-center gap-2 text-xs text-muted">
+          <Icon name="lock" size={13} />
+          Read in this tab, never uploaded · up to 50 MB and 500,000 rows
         </span>
       </span>
     </label>

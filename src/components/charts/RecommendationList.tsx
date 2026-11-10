@@ -13,7 +13,7 @@ interface Props {
 export function RecommendationList({ items, columns, selectedIds, onToggle }: Props) {
   if (items.length === 0) {
     return (
-      <div className="card p-8 text-center">
+      <div className="card p-10 text-center">
         <p className="font-serif text-xl">No chart suggestions yet</p>
         <p className="mt-1 text-sm text-muted">This file has no combination of columns that charts well.</p>
       </div>
@@ -21,18 +21,19 @@ export function RecommendationList({ items, columns, selectedIds, onToggle }: Pr
   }
 
   return (
-    <ul className="grid gap-5 2xl:grid-cols-2">
+    <ul className="space-y-6">
       {items.map((r, i) => {
         const pct = Math.round(r.score * 100)
+        const on = selectedIds.includes(r.id)
         return (
           <li key={r.id} id={`chart-${r.id}`} className="rise scroll-mt-6" style={stagger(i)}>
             <ChartCard
               spec={r.spec}
               columns={columns}
-              selected={selectedIds.includes(r.id)}
+              selected={on}
               footer={
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 basis-56">
+                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+                  <div className="min-w-0 flex-1 basis-60">
                     <p className="text-xs leading-relaxed text-muted">{r.reason}</p>
                     <div className="mt-2 flex items-center gap-2 text-xs text-ink-soft">
                       <span className="h-1.5 w-20 overflow-hidden rounded-full bg-black/10">
@@ -41,7 +42,7 @@ export function RecommendationList({ items, columns, selectedIds, onToggle }: Pr
                       <span className="font-mono">{pct}% match</span>
                     </div>
                   </div>
-                  <Switch label="Include in report" checked={selectedIds.includes(r.id)} onChange={() => onToggle(r.id)} />
+                  <Switch label="Include in report" checked={on} onChange={() => onToggle(r.id)} />
                 </div>
               }
             />
