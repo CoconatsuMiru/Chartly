@@ -15,6 +15,18 @@ import { newId } from '@/utils/ids'
 
 type View = 'edit' | 'preview'
 
+/** Grid columns for each combination of open panels (o = open, c = closed). Written out in full so Tailwind can see them. */
+const COLUMNS: Record<string, string> = {
+  oo: 'lg:grid-cols-[232px_minmax(0,1fr)_288px]',
+  oc: 'lg:grid-cols-[232px_minmax(0,1fr)]',
+  co: 'lg:grid-cols-[minmax(0,1fr)_288px]',
+  cc: 'lg:grid-cols-[minmax(0,1fr)]',
+}
+
+const panel =
+  'panel p-4 lg:sticky lg:top-[5.25rem] lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto'
+const divider = <span aria-hidden="true" className="mx-1 hidden h-5 w-px bg-line sm:block" />
+
 export default function ComposePage() {
   const result = useSessionStore((s) => s.result)
   const selectedChartIds = useSessionStore((s) => s.selectedChartIds)
@@ -26,6 +38,8 @@ export default function ComposePage() {
   const canRedo = useStore(useReportStore.temporal, (t) => t.futureStates.length > 0)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [view, setView] = useState<View>('edit')
+  const [outlineOpen, setOutlineOpen] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
+  const [settingsOpen, setSettingsOpen] = useState(() => window.matchMedia('(min-width: 1280px)').matches)
   const plan = useReportPlan(report, view === 'preview')
 
   const build = useCallback(() => {
@@ -68,10 +82,12 @@ export default function ComposePage() {
 
   const theme = getTheme(report.themeId)
   const history = useReportStore.temporal.getState()
+  const columns = COLUMNS[`${outlineOpen ? 'o' : 'c'}${settingsOpen ? 'o' : 'c'}`]
 
   return (
     <div>
       <PageHeader
+        compact
         eyebrow="Stage 3 · Compose"
         title={
           <>
@@ -83,79 +99,103 @@ export default function ComposePage() {
             ? 'Click any text to edit it. Drag sections in the outline to reorder them.'
             : 'A paginated preview of your report with the chosen layout.'
         }
-        actions={
-          <>
-            <button type="button" className="btn btn-secondary" onClick={() => setStage('explore')}>
-              <Icon name="arrowLeft" size={16} />
-              Back to Explore
-            </button>
-            <button type="button" onClick={() => setStage('export')} className="btn btn-primary">
-              Continue to Export
-              <Icon name="arrowRight" size={16} />
-            </button>
-          </>
-        }
       />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[236px_minmax(0,1fr)] xl:grid-cols-[236px_minmax(0,1fr)_276px]">
-        <aside className="card p-5 lg:sticky lg:top-6 lg:max-h-[calc(100vh-9rem)] lg:overflow-auto">
-          <OutlinePanel report={report} selectedId={selectedId} onSelect={setSelectedId} />
-        </aside>
+      <div
+        role="group"
+        aria-label="Editor tools"
+        className="sticky top-3 z-20 mb-5 flex flex-wrap items-center gap-x-2 gap-y-2 rounded-xl border border-line bg-surface/95 px-3 py-2 backdrop-blur"
+      >
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          aria-pressed={outlineOpen}
+          aria-controls="outline-panel"
+          onClick={() => setOutlineOpen((v) => !v)}
+        >
+          <Icon name="rows" size={16} />
+          Outline
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          aria-pressed={settingsOpen}
+          aria-controls="settings-panel"
+          onClick={() => setSettingsOpen((v) => !v)}
+        >
+          <Icon name="columns" size={16} />
+          Settings
+        </button>
+        {divider}
+        <div role="group" aria-label="View" className="seg">
+          <button type="button" aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+            Edit
+          </button>
+          <button type="button" aria-pressed={view === 'preview'} onClick={() => setView('preview')}>
+            Preview
+          </button>
+        </div>
+        {divider}
+        <button type="button" className="btn btn-ghost btn-sm" disabled={!canUndo} onClick={() => history.undo()}>
+          <Icon name="undo" size={16} />
+          Undo
+        </button>
+        <button type="button" className="btn btn-ghost btn-sm" disabled={!canRedo} onClick={() => history.redo()}>
+          <Icon name="redo" size={16} />
+          Redo
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            if (
+              window.confirm(
+                'Rebuild the report from your current chart selections? Your edits will be replaced (you can undo).',
+              )
+            ) {
+              build()
+            }
+          }}
+        >
+          Rebuild from selections
+        </button>
 
-        <div className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div role="group" aria-label="View" className="seg">
-              <button type="button" aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
-                Edit
-              </button>
-              <button type="button" aria-pressed={view === 'preview'} onClick={() => setView('preview')}>
-                Preview
-              </button>
-            </div>
-            <div className="flex items-center gap-1">
-              <button type="button" className="btn btn-ghost btn-sm" disabled={!canUndo} onClick={() => history.undo()}>
-                <Icon name="undo" size={16} />
-                Undo
-              </button>
-              <button type="button" className="btn btn-ghost btn-sm" disabled={!canRedo} onClick={() => history.redo()}>
-                <Icon name="redo" size={16} />
-                Redo
-              </button>
-              <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-line" />
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      'Rebuild the report from your current chart selections? Your edits will be replaced (you can undo).',
-                    )
-                  ) {
-                    build()
-                  }
-                }}
-              >
-                Rebuild from selections
-              </button>
-            </div>
-          </div>
+        <div className="ml-auto flex items-center gap-2">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setStage('explore')}>
+            <Icon name="arrowLeft" size={15} />
+            Back to Explore
+          </button>
+          <button type="button" onClick={() => setStage('export')} className="btn btn-primary btn-sm">
+            Continue to Export
+            <Icon name="arrowRight" size={15} />
+          </button>
+        </div>
+      </div>
 
-          <div className="desk rounded-[22px] p-5 sm:p-8">
-            {view === 'edit' ? (
-              <PageCanvas report={report} theme={theme} selectedId={selectedId} onSelect={setSelectedId} />
-            ) : plan ? (
-              <PreviewPane plan={plan} report={report} />
-            ) : (
-              <p role="status" className="text-center text-sm text-ink-soft">
-                Laying out pages…
-              </p>
-            )}
-          </div>
+      <div className={`grid items-start gap-5 ${columns}`}>
+        {outlineOpen && (
+          <aside id="outline-panel" aria-label="Report outline" className={panel}>
+            <OutlinePanel report={report} selectedId={selectedId} onSelect={setSelectedId} />
+          </aside>
+        )}
+
+        <div className="desk min-w-0 rounded-2xl px-4 py-8 sm:px-8 sm:py-10">
+          {view === 'edit' ? (
+            <PageCanvas report={report} theme={theme} selectedId={selectedId} onSelect={setSelectedId} />
+          ) : plan ? (
+            <PreviewPane plan={plan} report={report} />
+          ) : (
+            <p role="status" className="text-center text-sm text-ink-soft">
+              Laying out pages…
+            </p>
+          )}
         </div>
 
-        <aside className="card p-6 lg:col-span-2 xl:sticky xl:top-6 xl:col-span-1 xl:max-h-[calc(100vh-9rem)] xl:overflow-auto">
-          <Inspector report={report} selectedId={selectedId} />
-        </aside>
+        {settingsOpen && (
+          <aside id="settings-panel" aria-label="Report settings" className={`${panel} p-5`}>
+            <Inspector report={report} selectedId={selectedId} />
+          </aside>
+        )}
       </div>
     </div>
   )

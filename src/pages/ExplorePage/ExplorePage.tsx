@@ -2,6 +2,7 @@ import { RecommendationList } from '@/components/charts/RecommendationList'
 import { InsightFeed } from '@/components/insights/InsightFeed'
 import { Icon } from '@/components/ui/Icon'
 import { PageHeader } from '@/components/ui/PageHeader'
+import { StatStrip } from '@/components/ui/StatStrip'
 import { useSessionStore } from '@/state/sessionStore'
 
 export default function ExplorePage() {
@@ -27,12 +28,27 @@ export default function ExplorePage() {
             Explore the <em>story</em>
           </>
         }
-        description={`Chartly found ${result.insights.length} finding(s) and ${result.recommendations.length} chart suggestion(s) in ${result.source.fileName}. Switch on the charts you want in your report.`}
+        description={`Review what Chartly found in ${result.source.fileName}, and switch on the charts you want in your report.`}
       />
 
-      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="mb-10 border-y border-line py-7">
+        <StatStrip
+          stats={[
+            { label: 'Rows', value: result.rowCount.toLocaleString('en-US') },
+            { label: 'Columns', value: String(result.columns.length) },
+            { label: 'Findings', value: String(result.insights.length) },
+            {
+              label: 'Charts in report',
+              value: `${selected.length} of ${result.recommendations.length}`,
+              hint: 'Switched on below',
+            },
+          ]}
+        />
+      </div>
+
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:items-start xl:gap-12">
         <section aria-labelledby="charts-heading">
-          <h3 id="charts-heading" className="mb-5 font-serif text-2xl">
+          <h3 id="charts-heading" className="h-section mb-5">
             Chart workbench
           </h3>
           <RecommendationList
@@ -43,27 +59,20 @@ export default function ExplorePage() {
           />
         </section>
 
-        <aside
-          aria-labelledby="findings-heading"
-          className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-9rem)] xl:self-start xl:overflow-auto xl:pr-1"
-        >
-          <h3 id="findings-heading" className="mb-5 font-serif text-2xl">
+        <aside aria-labelledby="findings-heading">
+          <h3 id="findings-heading" className="h-section mb-5">
             Findings
           </h3>
           <InsightFeed insights={result.insights} chartIds={chartIds} onShowChart={showChart} />
         </aside>
       </div>
 
-      <div className="glass sticky bottom-5 z-10 mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl px-6 py-4">
-        <div className="flex items-center gap-3">
-          <span className="bg-brand-grad grid size-9 place-items-center rounded-full text-sm font-bold tabular-nums text-white">
-            {selected.length}
-          </span>
-          <p className="text-sm">
-            <span className="font-semibold">chart{selected.length === 1 ? '' : 's'} selected</span>{' '}
-            <span className="text-ink-soft">for the report</span>
-          </p>
-        </div>
+      <div className="glass sticky bottom-5 z-10 mt-10 flex flex-wrap items-center justify-between gap-4 rounded-xl px-5 py-3.5">
+        <p className="text-sm">
+          <span className="font-semibold tabular-nums">{selected.length}</span>{' '}
+          <span className="font-semibold">chart{selected.length === 1 ? '' : 's'} selected</span>{' '}
+          <span className="text-ink-soft">for the report</span>
+        </p>
         <div className="flex gap-3">
           <button type="button" onClick={() => setStage('import')} className="btn btn-secondary">
             <Icon name="arrowLeft" size={16} />

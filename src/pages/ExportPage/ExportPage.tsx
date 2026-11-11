@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PlanPage } from '@/components/report/PlanPage'
 import { Icon, type IconName } from '@/components/ui/Icon'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -16,7 +16,8 @@ import { downloadBlob } from '@/utils/download'
 import { formatBytes } from '@/utils/format'
 import { getDataWorker } from '@/workers/workerClient'
 
-const THUMB_HEIGHT = 240
+const THUMB_WIDTH = 84
+const PREVIEW_MAX = { document: 680, deck: 980 }
 
 const FORMATS: { id: ExportFormat; name: string; blurb: string; icon: IconName }[] = [
   { id: 'pdf', name: 'PDF document', blurb: 'Selectable text and sharp charts. Best for sharing and printing.', icon: 'file' },
@@ -33,10 +34,8 @@ const LEVEL: Record<CheckLevel, { label: string; icon: IconName; cls: string }> 
 type Message = { kind: 'ok' | 'error'; text: string }
 
 const optionCls = (on: boolean) =>
-  `relative rounded-2xl border p-4 text-left transition-colors ${
-    on
-      ? 'border-primary bg-primary-soft shadow-[0_0_0_1px_var(--color-primary)]'
-      : 'border-line bg-surface hover:border-primary/40 hover:shadow-lift'
+  `relative flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition-colors ${
+    on ? 'border-primary bg-primary-soft' : 'border-line hover:bg-paper'
   }`
 
 export default function ExportPage() {
@@ -49,14 +48,26 @@ export default function ExportPage() {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<Progress | null>(null)
   const [message, setMessage] = useState<Message | null>(null)
+  const [active, setActive] = useState(0)
+  const [width, setWidth] = useState(0)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const hasPlan = plan !== null
+
+  useEffect(() => {
+    const el = stageRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasPlan])
 
   const checks = useMemo(() => (report && plan ? runPreflight(report, plan, format) : []), [report, plan, format])
   const blocked = checks.some((c) => c.level === 'error')
 
   if (!report) {
     return (
-      <div className="card max-w-xl space-y-4 p-8">
-        <p className="font-serif text-xl">There is no report to export yet.</p>
+      <div className="panel max-w-xl space-y-4 p-8">
+        <p className="h-card">There is no report to export yet.</p>
         <button type="button" onClick={() => setStage('compose')} className="btn btn-secondary">
           Go to Compose
         </button>
@@ -66,6 +77,11 @@ export default function ExportPage() {
 
   const template = getTemplate(report.layoutTemplateId)
   const label = format === 'pdf' ? 'PDF' : 'PowerPoint'
+  const unit = plan?.format === 'deck' ? 'Slide' : 'Page'
+  const index = plan ? Math.min(active, plan.pages.length - 1) : 0
+  const pagePx = plan ? plan.page.width * PX_PER_PT : 1
+  const maxWidth = plan?.format === 'deck' ? PREVIEW_MAX.deck : PREVIEW_MAX.document
+  const scale = width > 0 ? Math.min(1, Math.min(width, maxWidth) / pagePx) : 1
 
   async function run() {
     if (!report || !plan || busy || blocked) return
@@ -110,42 +126,64 @@ export default function ExportPage() {
         }
       />
 
-      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_390px]">
-        <section aria-labelledby="pages-heading" className="desk min-w-0 rounded-[22px] p-6 sm:p-8">
-          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h3 id="pages-heading" className="font-serif text-2xl">
+      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_368px]">
+        <section aria-labelledby="pages-heading" className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h3 id="pages-heading" className="h-section">
               {plan?.format === 'deck' ? 'Slides' : 'Pages'}
             </h3>
-            <p className="text-sm text-ink-soft">
-              {plan ? `${plan.pages.length} · ` : ''}
+            <p className="text-[13px] text-ink-soft">
               {template.name} · {getTheme(report.themeId).name} theme
+              {plan ? ` · ${plan.pages.length} ${unit.toLowerCase()}${plan.pages.length === 1 ? '' : 's'}` : ''}
             </p>
           </div>
 
-          {plan ? (
-            <ol
-              aria-label={plan.format === 'deck' ? 'Slides' : 'Pages'}
-              tabIndex={0}
-              className="flex gap-6 overflow-x-auto pb-4"
-            >
-              {plan.pages.map((_, i) => (
-                <li key={i} className="shrink-0 space-y-2.5">
-                  <PlanPage plan={plan} index={i} report={report} scale={THUMB_HEIGHT / (plan.page.height * PX_PER_PT)} />
-                  <p className="text-center font-mono text-xs text-ink-soft">{i + 1}</p>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p role="status" className="text-sm text-ink-soft">
-              Laying out pages…
-            </p>
-          )}
+          <div className="desk rounded-2xl p-5 sm:p-8">
+            {plan ? (
+              <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+                <ol
+                  aria-label={plan.format === 'deck' ? 'Slides' : 'Pages'}
+                  className="order-2 flex shrink-0 gap-3 overflow-x-auto pb-1 md:order-1 md:w-[84px] md:flex-col md:overflow-visible"
+                >
+                  {plan.pages.map((_, i) => (
+                    <li key={i} className="shrink-0">
+                      <button
+                        type="button"
+                        aria-label={`Show ${unit.toLowerCase()} ${i + 1}`}
+                        aria-current={i === index ? 'page' : undefined}
+                        onClick={() => setActive(i)}
+                        className={`block rounded-md ring-2 ring-offset-2 ring-offset-[#ebe7dc] transition-shadow ${
+                          i === index ? 'ring-primary' : 'ring-transparent hover:ring-black/20'
+                        }`}
+                      >
+                        <span aria-hidden="true" className="pointer-events-none block">
+                          <PlanPage plan={plan} index={i} report={report} scale={THUMB_WIDTH / pagePx} />
+                        </span>
+                      </button>
+                      <p className="mt-1.5 text-center text-xs tabular-nums text-ink-soft">{i + 1}</p>
+                    </li>
+                  ))}
+                </ol>
+
+                <div ref={stageRef} className="order-1 flex min-w-0 flex-1 justify-center md:order-2">
+                  <PlanPage plan={plan} index={index} report={report} scale={scale} />
+                </div>
+              </div>
+            ) : (
+              <p role="status" className="py-10 text-center text-sm text-ink-soft">
+                Laying out pages…
+              </p>
+            )}
+          </div>
         </section>
 
-        <aside className="card space-y-7 p-6" aria-label="Export settings">
-          <section>
-            <h3 className="mb-3 font-serif text-xl">Format</h3>
-            <div role="radiogroup" aria-label="File format" className="grid grid-cols-2 gap-3">
+        <aside
+          className="panel divide-y divide-line xl:sticky xl:top-6 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto"
+          aria-label="Export settings"
+        >
+          <section className="space-y-3 p-6">
+            <h3 className="eyebrow-muted">Format</h3>
+            <div role="radiogroup" aria-label="File format" className="space-y-2">
               {FORMATS.map((f) => (
                 <button
                   key={f.id}
@@ -154,32 +192,25 @@ export default function ExportPage() {
                   aria-checked={format === f.id}
                   disabled={busy}
                   onClick={() => setFormat(f.id)}
-                  className={`flex flex-col gap-3 ${optionCls(format === f.id)}`}
+                  className={optionCls(format === f.id)}
                 >
-                  <span className="bg-brand-grad grid size-10 place-items-center rounded-xl text-white">
-                    <Icon name={f.icon} size={20} />
+                  <span className="bg-brand-grad grid size-9 shrink-0 place-items-center rounded-lg text-white">
+                    <Icon name={f.icon} size={18} />
                   </span>
-                  <span>
+                  <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{f.name}</span>
-                    <span className="mt-1 block text-xs leading-relaxed text-ink-soft">{f.blurb}</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">{f.blurb}</span>
                   </span>
-                  {format === f.id && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute right-3 top-3 grid size-5 place-items-center rounded-full bg-primary text-white"
-                    >
-                      <Icon name="check" size={12} />
-                    </span>
-                  )}
+                  {format === f.id && <Icon name="check" size={16} className="mt-1 shrink-0 text-primary" />}
                 </button>
               ))}
             </div>
           </section>
 
           {format === 'pptx' && (
-            <section className="border-t border-line pt-6">
-              <h3 className="mb-3 font-serif text-xl">Charts in PowerPoint</h3>
-              <div role="radiogroup" aria-label="Chart type in PowerPoint" className="space-y-3">
+            <section className="space-y-3 p-6">
+              <h3 className="eyebrow-muted">Charts in PowerPoint</h3>
+              <div role="radiogroup" aria-label="Chart type in PowerPoint" className="space-y-2">
                 {(
                   [
                     ['native', 'Editable PowerPoint charts', 'Right-click a chart to edit its data. Charts with gaps, trend lines or grouped points use images instead.'],
@@ -193,26 +224,29 @@ export default function ExportPage() {
                     aria-checked={chartMode === id}
                     disabled={busy}
                     onClick={() => setChartMode(id)}
-                    className={`block w-full ${optionCls(chartMode === id)}`}
+                    className={optionCls(chartMode === id)}
                   >
-                    <span className="block text-sm font-semibold">{name}</span>
-                    <span className="mt-1 block text-xs leading-relaxed text-ink-soft">{blurb}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold">{name}</span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">{blurb}</span>
+                    </span>
+                    {chartMode === id && <Icon name="check" size={16} className="mt-1 shrink-0 text-primary" />}
                   </button>
                 ))}
               </div>
             </section>
           )}
 
-          <section aria-labelledby="preflight-heading" className="border-t border-line pt-6">
-            <h3 id="preflight-heading" className="mb-3 font-serif text-xl">
+          <section aria-labelledby="preflight-heading" className="space-y-3 p-6">
+            <h3 id="preflight-heading" className="eyebrow-muted">
               Before you export
             </h3>
             {plan ? (
               <ul className="space-y-3">
                 {checks.map((c) => (
-                  <li key={c.id} className="flex items-start gap-3 text-sm">
+                  <li key={c.id} className="flex items-start gap-3 text-[13px]">
                     <span
-                      className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${LEVEL[c.level].cls}`}
+                      className={`mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${LEVEL[c.level].cls}`}
                     >
                       <Icon name={LEVEL[c.level].icon} size={11} />
                       {LEVEL[c.level].label}
@@ -226,14 +260,14 @@ export default function ExportPage() {
             )}
           </section>
 
-          <section className="space-y-4 border-t border-line pt-6">
+          <section className="space-y-4 p-6">
             <button
               type="button"
               onClick={run}
               disabled={!plan || busy || blocked}
-              className="btn btn-primary w-full py-3.5 text-[15px]"
+              className="btn btn-primary w-full py-3 text-sm"
             >
-              <Icon name="download" size={18} />
+              <Icon name="download" size={17} />
               {busy ? `Creating ${label}…` : `Download ${label}`}
             </button>
 

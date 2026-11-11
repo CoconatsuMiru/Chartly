@@ -1,8 +1,8 @@
 import type { Theme } from '@/domain'
 
 const fonts = {
-  heading: 'Source Serif 4',
-  body: 'Instrument Sans',
+  heading: 'Newsreader',
+  body: 'Geist Sans',
   mono: 'Courier',
 }
 
@@ -34,7 +34,7 @@ export const THEMES: Theme[] = [
       line: '#2A3D5A',
       primary: '#5BC0BE',
       accent: '#F4B942',
-      },
+    },
     dataPalette: ['#5BC0BE', '#F4B942', '#8FA8E0', '#E58CA0', '#A9C47F', '#B79BD0'],
     fonts,
     type: { h1: 30, h2: 20, body: 12, caption: 10 },

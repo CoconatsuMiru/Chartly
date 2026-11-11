@@ -51,8 +51,8 @@ function Row({ id, label, kind, hidden, selected, onSelect }: RowProps) {
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`group flex items-center gap-1 rounded-xl border px-1.5 py-1.5 transition-colors ${
-        selected ? 'border-primary/40 bg-primary-soft' : 'border-transparent hover:bg-paper'
+      className={`group flex items-center gap-0.5 rounded-lg px-1 py-1 transition-colors ${
+        selected ? 'bg-primary-soft' : 'hover:bg-paper'
       } ${isDragging ? 'bg-white opacity-70 shadow-lift' : ''}`}
     >
       <button
@@ -64,12 +64,12 @@ function Row({ id, label, kind, hidden, selected, onSelect }: RowProps) {
       >
         <Icon name="grip" size={16} />
       </button>
-      <button type="button" onClick={onSelect} className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm">
-        <Icon name={KIND_ICON[kind]} size={16} className="shrink-0 text-primary" />
+      <button type="button" onClick={onSelect} className="flex min-w-0 flex-1 items-center gap-2 py-0.5 text-left text-[13px]">
+        <Icon name={KIND_ICON[kind]} size={15} className="shrink-0 text-primary" />
         <span className={`truncate ${hidden ? 'text-muted line-through' : 'font-medium'}`}>{label}</span>
       </button>
       <span
-        className={`flex items-center transition-opacity ${
+        className={`flex items-center ${
           selected ? 'opacity-100' : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
         }`}
       >
@@ -129,7 +129,7 @@ export function OutlinePanel({ report, selectedId, onSelect }: Props) {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-serif text-xl">Outline</h3>
+      <h3 className="eyebrow-muted px-1">Outline</h3>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol className="space-y-0.5">
@@ -148,7 +148,7 @@ export function OutlinePanel({ report, selectedId, onSelect }: Props) {
         </SortableContext>
       </DndContext>
 
-      <div className="space-y-2 border-t border-line pt-3">
+      <div className="space-y-2 border-t border-line pt-4">
         <button
           type="button"
           onClick={() =>

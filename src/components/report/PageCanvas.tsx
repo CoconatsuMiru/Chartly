@@ -14,14 +14,14 @@ export function PageCanvas({ report, theme, selectedId, onSelect }: Props) {
 
   return (
     <div
-      className="mx-auto max-w-3xl space-y-8 rounded-lg border p-8 shadow-[0_2px_4px_rgb(18_32_42/0.08),0_30px_60px_-24px_rgb(18_32_42/0.38)] sm:p-12"
+      className="mx-auto max-w-[820px] space-y-9 rounded-md border p-8 shadow-[0_1px_2px_rgb(18_32_42/0.08),0_24px_48px_-24px_rgb(18_32_42/0.3)] sm:p-14"
       style={{
         background: theme.colors.paper,
         color: theme.colors.ink,
         borderColor: theme.colors.line,
         fontFamily: `"${theme.fonts.body}", system-ui, sans-serif`,
         fontSize: pt(theme.type.body),
-        lineHeight: 1.5,
+        lineHeight: 1.55,
       }}
     >
       {visible.map(({ block }) => (
@@ -29,7 +29,7 @@ export function PageCanvas({ report, theme, selectedId, onSelect }: Props) {
           key={block.id}
           id={`sec-${block.id}`}
           onClick={() => onSelect(block.id)}
-          className={`-m-2 rounded-lg p-2 ring-1 transition-shadow ${
+          className={`-m-3 rounded-lg p-3 ring-1 transition-shadow ${
             selectedId === block.id ? 'ring-2 ring-[var(--color-primary)]' : 'ring-transparent hover:ring-black/10'
           }`}
         >

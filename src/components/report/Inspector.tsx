@@ -29,7 +29,7 @@ function ChartOptions({ spec }: { spec: ChartSpec }) {
 
   return (
     <div className="space-y-4">
-      <p className="truncate text-sm font-semibold" title={spec.title}>
+      <p className="truncate text-[13px] font-semibold" title={spec.title}>
         {spec.title}
       </p>
       {types.length > 1 && (
@@ -41,7 +41,7 @@ function ChartOptions({ spec }: { spec: ChartSpec }) {
           ))}
         </div>
       )}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {toggles.map(({ key, label }) => (
           <div key={key}>
             <Switch label={label} checked={!!spec.options[key]} onChange={(v) => patchChart(spec.id, {}, { [key]: v })} />
@@ -60,22 +60,23 @@ export function Inspector({ report, selectedId }: Props) {
   return (
     <div className="space-y-6">
       <section>
-        <h3 className="mb-2.5 font-serif text-xl">Layout</h3>
+        <h3 className="eyebrow-muted mb-3">Layout</h3>
         <LayoutPicker value={report.layoutTemplateId} onChange={setLayoutTemplate} />
-        <p className="mt-2 text-xs text-muted">Shown in the Preview tab and used for exports.</p>
       </section>
 
       <section className="border-t border-line pt-5">
-        <h3 className="mb-2.5 font-serif text-xl">Theme</h3>
+        <h3 className="eyebrow-muted mb-3">Theme</h3>
         <ThemePicker value={report.themeId} onChange={setTheme} />
       </section>
 
       <section className="border-t border-line pt-5">
-        <h3 className="mb-2.5 font-serif text-xl">Selected chart</h3>
+        <h3 className="eyebrow-muted mb-3">Selected chart</h3>
         {chart ? (
           <ChartOptions spec={chart} />
         ) : (
-          <p className="text-sm text-muted">Click a chart in the report to change its type and options.</p>
+          <p className="text-[13px] leading-relaxed text-muted">
+            Click a chart in the report to change its type and options.
+          </p>
         )}
       </section>
     </div>

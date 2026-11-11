@@ -5,7 +5,7 @@ import { getDataWorker } from '@/workers/workerClient'
 import { TypeBadge } from './TypeBadge'
 
 const PAGE = 100
-const ROW_H = 36
+const ROW_H = 40
 const COL_W = 176
 
 interface Props {
@@ -44,7 +44,7 @@ export function DataGrid({ columns, rowCount }: Props) {
     }
   }, [items])
 
-  const template = `repeat(${columns.length}, ${COL_W}px)`
+  const template = `repeat(${columns.length}, minmax(${COL_W}px, 1fr))`
   const minWidth = columns.length * COL_W
 
   return (
@@ -54,7 +54,7 @@ export function DataGrid({ columns, rowCount }: Props) {
       aria-label="Data preview"
       aria-rowcount={rowCount + 1}
       tabIndex={0}
-      className="card h-[440px] overflow-auto"
+      className="panel h-[min(520px,60vh)] min-h-[280px] overflow-auto"
     >
       <div style={{ minWidth, width: '100%' }}>
         <div
@@ -67,9 +67,9 @@ export function DataGrid({ columns, rowCount }: Props) {
             <div
               key={c.id}
               role="columnheader"
-              className={`flex flex-col gap-1.5 px-4 py-3 ${c.type === 'number' ? 'items-end' : 'items-start'}`}
+              className={`flex flex-col gap-1.5 px-5 py-3.5 ${c.type === 'number' ? 'items-end' : 'items-start'}`}
             >
-              <span className="max-w-full truncate text-sm font-semibold" title={c.name}>
+              <span className="max-w-full truncate text-[13px] font-semibold" title={c.name}>
                 {c.name}
               </span>
               <TypeBadge column={c} />
@@ -85,7 +85,7 @@ export function DataGrid({ columns, rowCount }: Props) {
                 key={v.key}
                 role="row"
                 aria-rowindex={v.index + 2}
-                className="grid border-b border-line/70 text-[13px] transition-colors hover:bg-primary-soft/40"
+                className="grid items-center border-b border-line/70 text-[13px] hover:bg-[#f8f6f0]"
                 style={{
                   position: 'absolute',
                   top: 0,
@@ -100,7 +100,7 @@ export function DataGrid({ columns, rowCount }: Props) {
                   <div
                     key={c.id}
                     role="cell"
-                    className={`truncate px-4 py-2 ${c.type === 'number' ? 'text-right font-mono tabular-nums' : ''}`}
+                    className={`truncate px-5 ${c.type === 'number' ? 'text-right tabular-nums' : ''}`}
                   >
                     {row ? (row[ci] ?? '') : <span className="text-muted" aria-hidden="true">···</span>}
                   </div>

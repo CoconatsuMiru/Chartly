@@ -4,14 +4,21 @@ import { Icon } from '../ui/Icon'
 import { Logo } from '../ui/Logo'
 import { Stepper } from './Stepper'
 
+/** Each stage gets the width its content needs: reading, analysis, or an editor with side panels. */
+const WIDTH = {
+  import: 'max-w-[1200px]',
+  explore: 'max-w-[1360px]',
+  compose: 'max-w-[1440px]',
+  export: 'max-w-[1440px]',
+} as const
+
 export function AppShell({ children }: { children: ReactNode }) {
   const stage = useSessionStore((s) => s.stage)
   const result = useSessionStore((s) => s.result)
   const reset = useSessionStore((s) => s.reset)
   const mainRef = useRef<HTMLElement>(null)
 
-  // Compose and Export need room for side panels around a page.
-  const wide = stage === 'compose' || stage === 'export'
+  const editor = stage === 'compose'
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 })
@@ -30,10 +37,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         <span aria-hidden="true" className="bg-brand-bar absolute inset-x-0 top-0 h-[3px]" />
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-10 gap-y-4 px-6 py-4 sm:px-8 min-[1320px]:flex-nowrap">
           <div className="flex shrink-0 items-center gap-3">
-            <Logo size={36} />
+            <Logo size={34} />
             <div>
-              <h1 className="font-serif text-[1.45rem] leading-none tracking-tight">Chartly</h1>
-              <p className="mt-1 hidden text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted sm:block">
+              <h1 className="font-serif text-[1.4rem] font-medium leading-none tracking-tight">Chartly</h1>
+              <p className="mt-1 hidden text-[10.5px] font-semibold uppercase tracking-[0.12em] text-muted sm:block">
                 Auto-Report Studio
               </p>
             </div>
@@ -43,8 +50,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           {result && (
             <div className="order-2 ml-auto flex shrink-0 items-center gap-2 min-[1320px]:order-3">
-              <span className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-1.5 text-sm md:flex">
-                <Icon name="sheet" size={16} className="text-primary" />
+              <span className="hidden items-center gap-2 rounded-lg border border-line bg-surface px-3 py-1.5 text-[13px] md:flex">
+                <Icon name="sheet" size={15} className="text-primary" />
                 <span className="max-w-[150px] truncate font-medium" title={result.source.fileName}>
                   {result.source.fileName}
                 </span>
@@ -61,10 +68,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main id="main" ref={mainRef} className="min-h-0 min-w-0 flex-1 overflow-auto">
         <div
           key={stage}
-          className={`rise mx-auto px-6 pb-10 pt-10 sm:px-8 lg:px-10 lg:pt-12 ${wide ? 'max-w-[1440px]' : 'max-w-[1200px]'}`}
+          className={`rise mx-auto px-6 pb-10 sm:px-8 lg:px-10 ${editor ? 'pt-8' : 'pt-10 lg:pt-12'} ${WIDTH[stage]}`}
         >
           {children}
-          <p className="mt-16 flex items-center justify-center gap-2 text-xs text-muted">
+          <p className="mt-14 flex items-center justify-center gap-2 text-xs text-muted">
             <Icon name="lock" size={13} />
             Your file stays in this browser tab. Nothing is uploaded.
           </p>

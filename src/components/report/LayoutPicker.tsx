@@ -1,16 +1,17 @@
 import { TEMPLATES, getTemplate } from '@/core/report/layout/templates'
-import { Icon } from '../ui/Icon'
 
 interface Props {
   value: string
   onChange: (id: string) => void
 }
 
+const SHORT: Record<string, string> = { executive: 'Executive', grid: 'Grid', slides: 'Slides' }
+
 /** Tiny drawings of each layout, so the choice is visual. */
 function Glyph({ id }: { id: string }) {
   const ink = 'currentColor'
   return (
-    <svg aria-hidden="true" width="36" height="28" viewBox="0 0 36 28" className="shrink-0 text-primary">
+    <svg aria-hidden="true" width="36" height="28" viewBox="0 0 36 28" className="text-primary">
       {id === 'slides' ? (
         <>
           <rect x="2" y="4" width="32" height="20" rx="3" fill="none" stroke={ink} strokeWidth="1.5" />
@@ -40,31 +41,33 @@ function Glyph({ id }: { id: string }) {
 }
 
 export function LayoutPicker({ value, onChange }: Props) {
-  const current = getTemplate(value).id
+  const current = getTemplate(value)
   return (
-    <div role="radiogroup" aria-label="Report layout" className="space-y-2">
-      {TEMPLATES.map((t) => {
-        const on = t.id === current
-        return (
-          <button
-            key={t.id}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => onChange(t.id)}
-            className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors ${
-              on ? 'border-primary bg-primary-soft ring-1 ring-primary/30' : 'border-line hover:border-primary/40 hover:bg-paper'
-            }`}
-          >
-            <Glyph id={t.id} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">{t.name}</span>
-              <span className="block text-xs text-ink-soft">{t.description}</span>
-            </span>
-            {on && <Icon name="check" size={16} className="shrink-0 text-primary" />}
-          </button>
-        )
-      })}
+    <div>
+      <div role="radiogroup" aria-label="Report layout" className="grid grid-cols-3 gap-2">
+        {TEMPLATES.map((t) => {
+          const on = t.id === current.id
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={`${t.name}. ${t.description}`}
+              onClick={() => onChange(t.id)}
+              className={`flex flex-col items-center gap-1.5 rounded-xl border px-1 py-2.5 transition-colors ${
+                on ? 'border-primary bg-primary-soft' : 'border-line hover:bg-paper'
+              }`}
+            >
+              <Glyph id={t.id} />
+              <span className="text-xs font-semibold">{SHORT[t.id] ?? t.name}</span>
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-2 text-xs text-muted">
+        {current.name}: {current.description}
+      </p>
     </div>
   )
 }
